@@ -8,7 +8,7 @@ import java.util.Vector;
 public class GestionnaireEvenements implements Runnable
 {
 	// Déclaration d'une liste d'événements
-	private Vector lstEvenements;
+	private Vector<Evenement> lstEvenements;
 	
 	// Cette variable permet de savoir s'il faut arrêter le thread ou non
 	private boolean bolStopThread = false;
@@ -22,7 +22,7 @@ public class GestionnaireEvenements implements Runnable
 		super();
 		
 		// Créer une liste des événements
-		lstEvenements = new Vector();
+		lstEvenements = new Vector<Evenement>();
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class GestionnaireEvenements implements Runnable
 			{
 				// Stopper le thread du gestionnaire d'événements pour
 				// laisser un moment de répit au CPU
-				Thread.sleep(10);
+				Thread.sleep(50);
 			}
 			catch (InterruptedException ie) {}
 		}

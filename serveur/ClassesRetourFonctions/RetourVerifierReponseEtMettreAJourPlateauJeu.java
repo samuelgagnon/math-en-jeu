@@ -10,7 +10,7 @@ import java.awt.Point;
 public class RetourVerifierReponseEtMettreAJourPlateauJeu
 {
 	// Déclaration d'une variable qui va contenir si oui ou non le déplacement
-	// a été accpeté à cause que la réponse était bonne
+	// a été accepté à cause que la réponse était bonne
 	private boolean bolDeplacementAccepte;
 	
 	// Déclaration d'une variable qui va contenir l'explication du résultat
@@ -34,17 +34,20 @@ public class RetourVerifierReponseEtMettreAJourPlateauJeu
 	// Déclaration d'une variable qui va contenir le nouveau pointage
 	private int intNouveauPointage;
         
-        private int intNouvelArgent;
+    private int intNouvelArgent;
 	
 	private String strCollision;
 	
+	private int playerBonus;
+	
 	/**
 	 * Constructeur de la classe RetourVerifierReponseEtMettreAJourPlateauJeu.
+	 * @param bonus 
 	 * 
 	 * @param boolean deplacementAccepte : Permet de savoir si le déplacement a été accepté ou non
 	 * @param int nouveauPointage : Le nouveau pointage du joueur
 	 */
-	public RetourVerifierReponseEtMettreAJourPlateauJeu(boolean deplacementAccepte, int nouveauPointage, int nouvelArgent)
+	public RetourVerifierReponseEtMettreAJourPlateauJeu(boolean deplacementAccepte, int nouveauPointage, int nouvelArgent, int bonus)
 	{
 		// Initialiser les membres de la classe de retour
 		bolDeplacementAccepte = deplacementAccepte;
@@ -53,10 +56,25 @@ public class RetourVerifierReponseEtMettreAJourPlateauJeu
 		objObjetSubi = null;
 		objNouvellePosition = null;
 		intNouveauPointage = nouveauPointage;
-                intNouvelArgent = nouvelArgent;
+        intNouvelArgent = nouvelArgent;
 		strCollision = "vide";
+		playerBonus = bonus;
 	}
 	
+	/**
+	 * @return the playerBonus
+	 */
+	public int getPlayerBonus() {
+		return playerBonus;
+	}
+
+	/**
+	 * @param playerBonus the playerBonus to set
+	 */
+	public void setPlayerBonus(int playerBonus) {
+		this.playerBonus = playerBonus;
+	}
+
 	/**
 	 * Cette fonction retourne si oui ou non le déplacement est accepté.
 	 * 
@@ -158,11 +176,13 @@ public class RetourVerifierReponseEtMettreAJourPlateauJeu
 	{
 		return intNouveauPointage;
 	}
+	
+	
 
-        public int obtenirNouvelArgent()
-        {
-            return intNouvelArgent;
-        }
+    public int obtenirNouvelArgent()
+    {
+        return intNouvelArgent;
+    }
 	
 	public String obtenirCollision()
 	{

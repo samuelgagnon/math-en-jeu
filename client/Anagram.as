@@ -23,6 +23,7 @@ San Francisco, CA 94107, USA.
 /******************************************************************************
 Classe pour le jeu Anagram (version1)
 
+27-08-2008 Hugo Drouin-Vaillanourt - Ajout de Hint
 02-07-2007 Alexandre Couët - Version initiale
 ******************************************************************************/
 class Anagram
@@ -58,15 +59,44 @@ class Anagram
 	{
 		var root = myXML.firstChild;
         var nodes = root.childNodes;
-		this.mots = new Array(nodes.length);
+		this.mots = new Array();
+		
         for(var i=0; i<nodes.length; i++)
 		{  
 			var subnodes = nodes[i].childNodes;
-			this.mots[i] = new Array(3);
-			this.mots[i][0] = subnodes[0].firstChild.nodeValue.toString().toUpperCase();
-			this.mots[i][1] = this.calculerValeurMot(this.mots[i][0]);
-			this.mots[i][2] = subnodes[1].firstChild.nodeValue.toString();
-        }
+			var motActuel = new Array(4);
+			motActuel[0] = subnodes[0].firstChild.nodeValue.toString().toUpperCase();   //mot
+			if(this.motAccepte(motActuel[0]))
+			{
+				motActuel[1] = this.calculerValeurMot(motActuel[0]);    //valeur
+				motActuel[2] = subnodes[1].firstChild.nodeValue.toString();   // description
+				motActuel[3] = subnodes[2].firstChild.nodeValue.toString();  //hint
+				this.mots.push(motActuel);
+			}
+		}
+		trace("Nombre de mots chargés: " + mots.length + " sur " + nodes.length);
+	}
+	
+	/*****************************************************************************
+	Fonction : motAccepte
+	Paramètre :
+		- mot : le mot à vérifier
+	Description : on vérifie si le terme est adéquat pour le mini-jeu. Les
+		termes adéquats pour ce jeu sont des termes à un seul mot.
+	******************************************************************************/
+	private function motAccepte(mot:String)
+	{
+		for(var i=0; i<mot.length; i++)
+		{
+			if(mot.charAt(i) == ' ')
+			{
+				trace(mot + " - mot refusé");
+				return false;
+			}
+		}
+		
+		trace(mot + " - mot accepté");
+		return true;
 	}
 
 	
@@ -183,12 +213,35 @@ class Anagram
 			this.motEnCours[i]='?';
 		}
 
-		trace('Le mot à trouvé est : ' + this.mots[this.noMot][0]);
+		trace('Le mot à trouver est : ' + this.mots[this.noMot][0]);
 		
 		return true;
 	}
 	
-	
+	/*****************************************************************************
+	Fonction : standardiserMot
+	Paramêtre :
+		- mot : le mot à standardiser
+	Description : on met d'abord tous les lettres du mot passé en paramètre
+	    en minuscule. Ensuite, on vérifie si chacun des lettres du mot 
+		transformé est une lettre avec accent ou cédille. Si c'est le 
+		cas, on la convertit en lettre normale. 
+	******************************************************************************/
+	public function standardiserMot(mot:String)
+	{
+		mot = mot.toLowerCase();
+		
+		var t:Array = motVersArray(mot);
+		
+		for(var i = 0; i < t.length; i++)
+		{
+			t[i] = convertirLettreAccent(t[i]);
+		}
+		
+		mot = arrayVersMot(t, t.length);
+		trace("Mot standardisé: " + mot);
+		return mot;
+	}
 	
 	
 	/*****************************************************************************
@@ -270,6 +323,10 @@ class Anagram
 	public function retDescription()
 	{
 		return this.mots[this.noMot][2];
+	}
+	public function retHint()
+	{
+		return this.mots[this.noMot][3];
 	}
 	public function retMotEnCours()
 	{

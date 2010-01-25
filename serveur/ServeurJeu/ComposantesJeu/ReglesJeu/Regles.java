@@ -2,6 +2,11 @@ package ServeurJeu.ComposantesJeu.ReglesJeu;
 
 import java.util.TreeSet;
 
+import ServeurJeu.ComposantesJeu.Cases.CaseCouleur;
+import ServeurJeu.ComposantesJeu.Cases.CaseSpeciale;
+import ServeurJeu.ComposantesJeu.Objets.Objet;
+import ServeurJeu.ComposantesJeu.Objets.Magasins.Magasin;
+
 /**
  * @author Jean-François Brind'Amour
  */
@@ -9,19 +14,19 @@ public class Regles
 {
 	// Déclaration d'une liste qui contient les cases de couleur possibles (le 
 	// contenu est un objet ReglesCaseCouleur)
-	private TreeSet lstCasesCouleurPossibles;
+	private TreeSet<CaseCouleur> lstCasesCouleurPossibles;
 	
 	// Déclaration d'une liste qui contient les magasins possibles (le 
 	// contenu est un objet ReglesMagasin)
-	private TreeSet lstMagasinsPossibles;
+	private TreeSet<Magasin> lstMagasinsPossibles;
 	
 	// Déclaration d'une liste qui contient les cases spéciales possibles (le 
 	// contenu est un objet ReglesCaseSpeciale)
-	private TreeSet lstCasesSpecialesPossibles;
+	private TreeSet<CaseSpeciale> lstCasesSpecialesPossibles;
 	
 	// Déclaration d'une liste qui contient les objets utilisables possibles 
 	// (le contenu est un objet ReglesObjetUtilisable)
-	private TreeSet lstObjetsUtilisablesPossibles;
+	private TreeSet<Objet> lstObjetsUtilisablesPossibles;
 	
 	// Cette variable permet de savoir si on permet le chat ou non
 	private boolean bolPermetChat;
@@ -59,6 +64,27 @@ public class Regles
 	// peut se déplacer (minimum de 1)
 	private int intDeplacementMaximal;
 	
+	// Max of objects that shop can sale
+	private int intMaxSaledObjects;
+	
+	//Room is active in tournament and you enter directly in a board of this room
+	//private boolean tournamentState;
+	
+	// show or not the question number in client
+	private boolean showNumber;
+	
+	//max number of players that game can hold
+	private int maxNbPlayers;
+	
+	// This is the maximum number of coins and items a player can hold at one time
+	//private int maxNbObjectsAndMoney;
+	
+	//This is the number of tracks of the board of the game of type "Tournament"
+	private int nbTracks;
+	
+	//This is the number of virtual players for the game. Defined in DB in room options
+	private int nbVirtualPlayers;
+	
 	/**
 	 * Constructeur de la classe Regles qui permet d'initialiser
 	 * les règles.
@@ -70,10 +96,10 @@ public class Regles
 		
 	    // Créer les listes de couleurs possibles, cases spéciales possibles,
 		// d'objets utilisables possibles et de magasins possibles
-	    lstCasesCouleurPossibles = new TreeSet(objReglesComparator);
-	    lstMagasinsPossibles = new TreeSet(objReglesComparator);
-	    lstCasesSpecialesPossibles = new TreeSet(objReglesComparator);
-	    lstObjetsUtilisablesPossibles = new TreeSet(objReglesComparator);
+	    lstCasesCouleurPossibles = new TreeSet<CaseCouleur>(objReglesComparator);
+	    lstMagasinsPossibles = new TreeSet<Magasin>(objReglesComparator);
+	    lstCasesSpecialesPossibles = new TreeSet<CaseSpeciale>(objReglesComparator);
+	    lstObjetsUtilisablesPossibles = new TreeSet<Objet>(objReglesComparator);
 	    
 	    // Initialiser les variables par défaut
 	    bolPermetChat = true;
@@ -86,6 +112,11 @@ public class Regles
 	    intTempsMinimal = 0;
 	    intTempsMaximal = 0;
 	    intDeplacementMaximal = 1;
+	    intMaxSaledObjects = 0;
+	    //tournamentState = false;
+	    showNumber = true;
+	    setNbTracks(4);
+	    setNbVirtualPlayers(0);
 	}
 
 	/**
@@ -94,7 +125,7 @@ public class Regles
 	 * 
 	 * @return TreeSet : La liste des cases de couleur possibles
 	 */
-	public TreeSet obtenirListeCasesCouleurPossibles()
+	public TreeSet<CaseCouleur> obtenirListeCasesCouleurPossibles()
 	{
 	   return lstCasesCouleurPossibles;
 	}
@@ -104,7 +135,7 @@ public class Regles
 	 * 
 	 * @return TreeSet : La liste des magasins possibles
 	 */
-	public TreeSet obtenirListeMagasinsPossibles()
+	public TreeSet<Magasin> obtenirListeMagasinsPossibles()
 	{
 	   return lstMagasinsPossibles;
 	}
@@ -115,7 +146,7 @@ public class Regles
 	 * 
 	 * @return TreeSet : La liste des cases spéciales possibles
 	 */
-	public TreeSet obtenirListeCasesSpecialesPossibles()
+	public TreeSet<CaseSpeciale> obtenirListeCasesSpecialesPossibles()
 	{
 	   return lstCasesSpecialesPossibles;
 	}
@@ -126,7 +157,7 @@ public class Regles
 	 * 
 	 * @return TreeSet : La liste des objets utilisables possibles
 	 */
-	public TreeSet obtenirListeObjetsUtilisablesPossibles()
+	public TreeSet<Objet> obtenirListeObjetsUtilisablesPossibles()
 	{
 	   return lstObjetsUtilisablesPossibles;
 	}
@@ -334,5 +365,67 @@ public class Regles
 	public void definirDeplacementMaximal(int deplacement)
 	{
 		intDeplacementMaximal = deplacement;
+	}
+
+	public void setIntMaxSaledObjects(int intMaxSaledObjects) {
+		this.intMaxSaledObjects = intMaxSaledObjects;
+	}
+
+	public int getIntMaxSaledObjects() {
+		return intMaxSaledObjects;
+	}
+/*
+	public void setTournamentState(boolean tournamentActive) {
+		this.tournamentState = tournamentActive;
+	}
+
+	public boolean getTournamentState() {
+		return tournamentState;
+	}
+*/
+	public void setShowNumber(boolean showNumber) {
+		this.showNumber = showNumber;
+	}
+
+	public boolean getShowNumber() {
+		return showNumber;
+	}
+
+	public void setMaxNbPlayers(int maxNbPlayers) {
+		this.maxNbPlayers = maxNbPlayers;
+	}
+
+	public int getMaxNbPlayers() {
+		return maxNbPlayers;
+	}
+
+	/*public void setMaxNbObjectsAndMoney(int maxNbObjectsAndMoney) {
+		this.maxNbObjectsAndMoney = maxNbObjectsAndMoney;
+	}
+
+	public int getMaxNbObjectsAndMoney() {
+		return maxNbObjectsAndMoney;
+	}*/
+
+	public void setNbTracks(int nbTracks) {
+		this.nbTracks = nbTracks;
+	}
+
+	public int getNbTracks() {
+		return nbTracks;
+	}
+
+	/**
+	 * @return the nbVirtualPlayers
+	 */
+	public int getNbVirtualPlayers() {
+		return nbVirtualPlayers;
+	}
+
+	/**
+	 * @param nbVirtualPlayers the nbVirtualPlayers to set
+	 */
+	public void setNbVirtualPlayers(int nbVirtualPlayers) {
+		this.nbVirtualPlayers = nbVirtualPlayers;
 	}
 }

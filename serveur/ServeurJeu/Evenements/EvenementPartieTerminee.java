@@ -27,16 +27,16 @@ import ServeurJeu.Configuration.GestionnaireMessages;
  */
 public class EvenementPartieTerminee  extends Evenement
 {
-	private TreeMap lstJoueurs;
-	private Vector lstJoueursVirtuels;
-        private String joueurGagnant;
+	private TreeMap<String, JoueurHumain> lstJoueurs;
+	private Vector<JoueurVirtuel> lstJoueursVirtuels;
+    private String joueurGagnant;
 	
-	public EvenementPartieTerminee( TreeMap joueurs, Vector joueursVirtuels, String joueurGagnant)
+	public EvenementPartieTerminee( TreeMap<String, JoueurHumain> joueurs, Vector<JoueurVirtuel> joueursVirtuels, String joueurGagnant)
 	{
 		super();
 		lstJoueurs = joueurs;
 		lstJoueursVirtuels = joueursVirtuels;
-                this.joueurGagnant = joueurGagnant;
+        this.joueurGagnant = joueurGagnant;
 	}
 	
 	protected String genererCodeXML(InformationDestination information)
@@ -68,16 +68,19 @@ public class EvenementPartieTerminee  extends Evenement
                         objNoeudARejointLeWinTheGame.setAttribute("nom", joueurGagnant);
                         objNoeudCommande.appendChild(objNoeudARejointLeWinTheGame);
 			
-			Iterator it = lstJoueurs.values().iterator();
+			Iterator<JoueurHumain> it = lstJoueurs.values().iterator();
 			while( it.hasNext() )
 			{
 				JoueurHumain joueur = (JoueurHumain)it.next();
 				String nomUtilisateur = joueur.obtenirNomUtilisateur();
 				int pointage = joueur.obtenirPartieCourante().obtenirPointage();
+				int role = joueur.getRole();
 				
 				Element objNoeudJoueur = objDocumentXML.createElement("joueur");
 				objNoeudJoueur.setAttribute("utilisateur", nomUtilisateur);
 				objNoeudJoueur.setAttribute("pointage", new Integer( pointage).toString());
+				objNoeudJoueur.setAttribute("role", new Integer( role).toString());
+				
 				objNoeudParametre.appendChild( objNoeudJoueur );
 
 				// Ajouter le noeud paramètre au noeud de commande
@@ -91,10 +94,12 @@ public class EvenementPartieTerminee  extends Evenement
                                     JoueurVirtuel joueur = (JoueurVirtuel) lstJoueursVirtuels.get(i);
                                     String nomUtilisateur = joueur.obtenirNom();
                                     int pointage = joueur.obtenirPointage();
+                                    int role = 1;
 
                                     Element objNoeudJoueur = objDocumentXML.createElement("joueur");
                                     objNoeudJoueur.setAttribute("utilisateur", nomUtilisateur);
                                     objNoeudJoueur.setAttribute("pointage", new Integer( pointage).toString());
+                                    objNoeudJoueur.setAttribute("role", new Integer( role).toString());
 				    objNoeudParametre.appendChild(objNoeudJoueur);
 
 				    // Ajouter le noeud paramètre au noeud de commande
