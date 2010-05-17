@@ -16,9 +16,6 @@ public class Question
 	// Déclaration d'une variable qui va garder le type de la question
 	private String objTypeQuestion;
 	
-	// Déclaration d'une variable qui va garder la difficulté de la question
-	private int intDifficulte;
-	
 	// Déclaration d'une variable qui va contenir la réponse à la question
 	private String strReponse;
 	
@@ -26,21 +23,34 @@ public class Question
 	// la réponse
 	private String strURLExplication;
 	
-    // Déclaration d'une variable qui va contenir la catégorie de la question
+    /**
+     *  Déclaration d'une variable qui va contenir la catégorie de la question
+     * 
+     */
 	private int intCategorie;
 	
+	
 	/**
+	 *  Déclaration d'une variable qui va garder la difficulté de la question.
+	 *	Peut avoir une valeur entre 1 et 6, que dépend de niveau scolaire du 
+	 *  joueur pour cette categorie, si 0 est pas applicable pour joueur
+     */
+	private int intDifficulte;
+	 
+	
+	
+  /**
 	 * Constructeur de la classe Question qui initialise les propriétés de 
 	 * la question.
 	 * 
 	 * @param int codeQuestion : Le code de la question
 	 * @param String typeQuestion : Le type de la question
-	 * @param int difficulte : La difficulte de la question
+	 * @param int difficulte : La difficulte de la question - entre 0 et 6
 	 * @param String urlQuestion : Le URL de la question
 	 * @param String reponse : La réponse à la question
 	 * @param String urlExplication : Le URL de l'explication de la réponse
 	 */
-	public Question(int codeQuestion, String typeQuestion, int difficulte, String urlQuestion, String reponse, String urlExplication)
+	public Question(int codeQuestion, String typeQuestion, int difficulte, String urlQuestion, String reponse, String urlExplication, int categorie )
 	{
 		// Définir les propriétés des questions
 		intCodeQuestion = codeQuestion;
@@ -49,7 +59,17 @@ public class Question
 		strURLQuestion = urlQuestion;
 		strReponse = reponse;
 		strURLExplication = urlExplication;
-		intCategorie = 1;
+		intCategorie = categorie;
+	}
+	
+	/**
+	 * Cette fonction retourne la reponse  de la question.
+	 * 
+	 * @return string : La reponse de la question
+	 */
+	public String getStringAnswer()
+	{
+		return strReponse;
 	}
 	
 	/**
@@ -101,7 +121,15 @@ public class Question
 	 */
 	public boolean reponseEstValide(String reponse)
 	{
-		return strReponse.toUpperCase().replace(".",",").equals(reponse.toUpperCase());
+		// MEJ-91 standartisation des réponses
+		reponse = reponse.trim().toLowerCase().replace("ç","c").replace("ù","u");
+		reponse = reponse.replace("û", "u").replace("ô","o").replace("ò","o");
+		reponse = reponse.replace("é", "e").replace("ê","e").replace("è","e");
+		reponse = reponse.replace("à", "a").replace("â","a").replace(".",",");
+		reponse = reponse.replace("ï", "i").replace("î","i");
+		reponse = reponse.replace(",",".");
+		System.out.println("La reponse : " + reponse + " Est la rep dans BD : " + strReponse);
+		return strReponse.toLowerCase().replace(",",".").equals(reponse);
 	}
 	
 	
@@ -114,28 +142,47 @@ public class Question
 	 public String obtenirMauvaiseReponse()
 	 {
 	 	// Vérifier si la réponse est un choix de réponse
-	 	if (strReponse.toUpperCase().equals("A") ||
-	 	    strReponse.toUpperCase().equals("B") ||
-	 	    strReponse.toUpperCase().equals("C") ||
-	 	    strReponse.toUpperCase().equals("D") )
+	 	if (strReponse.toUpperCase().equals("1") ||
+	 	    strReponse.toUpperCase().equals("2") ||
+	 	    strReponse.toUpperCase().equals("3") ||
+	 	    strReponse.toUpperCase().equals("4") ||
+	 	    strReponse.toUpperCase().equals("5") ||
+	 	    strReponse.toUpperCase().equals("6") )
 	 	{
+	 		System.out.println(strReponse.toUpperCase());
+	 		
 	 		// Choisir aléatoirement une mauvaise réponse
-	 	    int arrShuffle[] = {0,1,2,3};
+	 		int nbChoix = 0;
+	 		if(objTypeQuestion.equals("MULTIPLE_CHOICE"))
+	 			nbChoix = 4;
+	 		else if(objTypeQuestion.equals("MULTIPLE_CHOICE_3"))
+	 			nbChoix = 3;
+	 		else if(objTypeQuestion.equals("MULTIPLE_CHOICE_5"))
+	 			nbChoix = 5;
+	 		
+	 		
+	 	    int arrShuffle[] = new int[nbChoix];
+	 	    for(int i = 0; i < nbChoix; i++)
+	 	    	arrShuffle[i] = i + 1;
+	 	    
 	 	    for (int x = 1; x < 10; x++)
 	 	    {
-	 	    	int a = UtilitaireNombres.genererNbAleatoire(4);
-	 	    	int b = UtilitaireNombres.genererNbAleatoire(4);
+	 	    	int a = UtilitaireNombres.genererNbAleatoire(nbChoix);
+	 	    	int b = UtilitaireNombres.genererNbAleatoire(nbChoix);
 	 	    	
 	 	    	int temp = arrShuffle[a];
 	 	    	arrShuffle[a] = arrShuffle[b];
 	 	    	arrShuffle[b] = temp;
 	 	    }
-	 	    for (int x = 1; x < 4; x++)
+	 	    for (int x = 1; x < nbChoix; x++)
 	 	    {
-	 	    	Character c = new Character((char)(arrShuffle[x] + 65));
-	 	    	String strMauvaiseReponse = c.toString();
+	 	    	//Character c = new Character((char)(arrShuffle[x] + 48));  // 65 for the letters 48 for the numbers
+	 	    	//String strMauvaiseReponse = c.toString();
+	 	    	
+	 	    	String strMauvaiseReponse = ((Integer)(arrShuffle[x])).toString();
 	 	    	if (!strMauvaiseReponse.equals(strReponse.toUpperCase()))
 	 	    	{
+	 	    		System.out.println("ICI mauvaise rep : "  + strMauvaiseReponse);
 	 	    		return strMauvaiseReponse;
 	 	    	}
 	 	    }	 
@@ -173,5 +220,5 @@ public class Question
 	{
 		intCategorie = categorie;
 	}
-
-}
+	
+} // fin classe

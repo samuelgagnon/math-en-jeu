@@ -11,6 +11,7 @@ import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -27,16 +28,16 @@ import ServeurJeu.Configuration.GestionnaireMessages;
  */
 public class EvenementPartieTerminee  extends Evenement
 {
-	private TreeMap lstJoueurs;
-	private Vector lstJoueursVirtuels;
-        private String joueurGagnant;
+	private TreeMap<String, JoueurHumain> lstJoueurs;
+	private ArrayList<JoueurVirtuel> lstJoueursVirtuels;
+    private String joueurGagnant;
 	
-	public EvenementPartieTerminee( TreeMap joueurs, Vector joueursVirtuels, String joueurGagnant)
+	public EvenementPartieTerminee( TreeMap<String, JoueurHumain> joueurs, ArrayList<JoueurVirtuel> lstVirtuels, String joueurGagnant)
 	{
 		super();
 		lstJoueurs = joueurs;
-		lstJoueursVirtuels = joueursVirtuels;
-                this.joueurGagnant = joueurGagnant;
+		lstJoueursVirtuels = lstVirtuels;
+        this.joueurGagnant = joueurGagnant;
 	}
 	
 	protected String genererCodeXML(InformationDestination information)
@@ -68,16 +69,19 @@ public class EvenementPartieTerminee  extends Evenement
                         objNoeudARejointLeWinTheGame.setAttribute("nom", joueurGagnant);
                         objNoeudCommande.appendChild(objNoeudARejointLeWinTheGame);
 			
-			Iterator it = lstJoueurs.values().iterator();
+			Iterator<JoueurHumain> it = lstJoueurs.values().iterator();
 			while( it.hasNext() )
 			{
 				JoueurHumain joueur = (JoueurHumain)it.next();
 				String nomUtilisateur = joueur.obtenirNomUtilisateur();
 				int pointage = joueur.obtenirPartieCourante().obtenirPointage();
+				int role = joueur.getRole();
 				
 				Element objNoeudJoueur = objDocumentXML.createElement("joueur");
 				objNoeudJoueur.setAttribute("utilisateur", nomUtilisateur);
 				objNoeudJoueur.setAttribute("pointage", new Integer( pointage).toString());
+				objNoeudJoueur.setAttribute("role", new Integer( role).toString());
+				
 				objNoeudParametre.appendChild( objNoeudJoueur );
 
 				// Ajouter le noeud paramètre au noeud de commande
@@ -91,10 +95,12 @@ public class EvenementPartieTerminee  extends Evenement
                                     JoueurVirtuel joueur = (JoueurVirtuel) lstJoueursVirtuels.get(i);
                                     String nomUtilisateur = joueur.obtenirNom();
                                     int pointage = joueur.obtenirPointage();
+                                    int role = 1;
 
                                     Element objNoeudJoueur = objDocumentXML.createElement("joueur");
                                     objNoeudJoueur.setAttribute("utilisateur", nomUtilisateur);
                                     objNoeudJoueur.setAttribute("pointage", new Integer( pointage).toString());
+                                    objNoeudJoueur.setAttribute("role", new Integer( role).toString());
 				    objNoeudParametre.appendChild(objNoeudJoueur);
 
 				    // Ajouter le noeud paramètre au noeud de commande

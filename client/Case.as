@@ -21,7 +21,7 @@ San Francisco, CA 94107, USA.
 *********************************************************************/
 
 class Case
-{
+{	
 	private var type:Number;				// Type (number)
 	private var l:Number;					// Row
 	private var c:Number;					// Column
@@ -55,16 +55,20 @@ class Case
 		
 		temp = (this.l+1)*nombreDeColonnes - c;
 		
-		nb = Math.abs(num%100);  // The cell's color is determined by num (its type)'s last 2 digits
+		nb = Math.abs(num%100);  // The cell's color is determined by num (its type)'s last 2 digits	
 		
-		if(nb == 91)
+		
+		if((nb >= 91)&&(nb <= 95))
 		{
-			this.clipCase = _level0.loader.contentHolder.referenceLayer.attachMovie("case91", "case"+temp, temp);
+			this.clipCase = _level0.loader.contentHolder.referenceLayer.attachMovie("case91", "case"+temp, temp, {_width:120, _height:44.7});
+			
 			this.miniGame = true;
 		}
 		else
 		{
-			this.clipCase = _level0.loader.contentHolder.referenceLayer.attachMovie("case0", "case"+temp, temp); 
+			this.clipCase = _level0.loader.contentHolder.referenceLayer.attachMovie("case0", "case"+temp, temp,{_width:120, _height:44.7});
+			//this.clipCase._width = 120;
+			//this.clipCase._height = 48;
 			this.miniGame = false;
 		}
 		
@@ -97,7 +101,6 @@ class Case
 			case 1:	// Shop
 				this.magasin = new Magasin("magasin" + String((num-(num%100))/100-100), 3*nombreDeCases+temp);
 				numMagasin = num % 100;
-				
 			break;
 
 			case 2:	// Coin
@@ -106,45 +109,47 @@ class Case
 
 			case 3:	// Item
 				var nomObj:String = new String();
-				trace("num : " + num);
+				
 				switch( ((num - 30000) - (num % 100)) / 100)
 				{
-				case 1:
-					nomObj = "Livre";
-				break;			
-				case 2:
-					nomObj = "Papillon";
-				break;
-				case 3:
-					nomObj = "Telephone";
-				break;
-				case 4:
-					nomObj = "Boule";
-				break;
-				case 5:
-					nomObj = "PotionGros";
-				break;
-				case 6:
-					nomObj = "PotionPetit";
-				break;
-				case 7:
-					nomObj = "Banane";
-				break;
+					case 1:
+						nomObj = "Livre";
+					break;			
+					case 2:
+						nomObj = "Papillon";
+					break;
+					case 3:
+						nomObj = "Telephone";
+					break;
+					case 4:
+						nomObj = "Boule";
+					break;
+					case 5:
+						nomObj = "PotionGros";
+					break;
+					case 6:
+						nomObj = "PotionPetit";
+					break;
+					case 7:
+						nomObj = "Banane";
+					break;
+					
+					case 8:
+						nomObj = "Braniac";
+					break;
 
-				default:break;
+
+					default:break;
 				}
 			
 				this.obj = new ObjetSurCase(nomObj, 4*nombreDeCases+temp);	
 			break;
 			
 			case 4: //	WinTheGame
-				trace("num : " + num);
-				this.winTheGame = new WinTheGame(3*nombreDeCases+temp);
-				obtenirClipCase().attachMovie("winTheGame", "winTheGame1", 100);
-				if(_level0.loader.contentHolder.langue == "en")
-				{
-					obtenirClipCase().winTheGame1.texteTorche = "Victory";
-				}
+				this.winTheGame = new WinTheGame(3*nombreDeCases + temp);
+				//obtenirClipCase().attachMovie("winPoint", "winPoint1", 100);
+				//winPoint1._x =
+				
 			break;
 		}				
 	}
@@ -283,7 +288,8 @@ class Case
 	function effacerCasePossible()
 	{
 		this.casePossible.removeMovieClip();
-		this.casePossible = null;
+		delete this.casePossible;
+		this.winTheGame.removeShineWin();
 	}
 
 
@@ -356,7 +362,8 @@ class Case
 			this.casePossible._y += ha;
 		}
 
-		for(i = 0; i < this.listeDesPersonnages.length; i++)
+        //var count:Number = this.listeDesPersonnages.length;
+		for(i in this.listeDesPersonnages)
 		{
 			this.listeDesPersonnages[i].translater(la, ha);
 		}
@@ -367,7 +374,11 @@ class Case
 	// Add a character on the cell
 	function ajouterPersonnage(p:Personnage)
 	{
-		this.listeDesPersonnages.push(p);
+		
+		//if(p.getRole() == 1)
+		//{ 
+		   this.listeDesPersonnages.push(p);
+		//}
 	}
 
 
@@ -377,8 +388,8 @@ class Case
 	function retirerPersonnage(p:Personnage)
 	{
 		var i:Number;
-
-		for(i = 0; i < this.listeDesPersonnages.length; i++)
+        var count:Number = this.listeDesPersonnages.length;        
+		for(i = 0; i < count; i++)
 		{
 			if(this.listeDesPersonnages[i].obtenirNumero() == p.obtenirNumero())
 			{
@@ -394,7 +405,7 @@ class Case
 	{
 		var i:Number;
 
-		if((this.clipCase._xscale+valeur) > 20 && (this.clipCase._xscale+valeur) < 200)
+		if((this.clipCase._xscale + valeur) > 20 && (this.clipCase._xscale+valeur) < 200)
 		{
 			this.clipCase._xscale += valeur;
 			this.clipCase._yscale += valeur;
@@ -426,8 +437,8 @@ class Case
 				this.casePossible._yscale += valeur;
 			}
 		
-
-			for(i = 0; i < this.listeDesPersonnages.length; i++)
+            //var count:Number = this.listeDesPersonnages.length;
+			for(i in this.listeDesPersonnages)
 			{
 				this.listeDesPersonnages[i].zoomer(valeur);
 			}
@@ -469,19 +480,24 @@ class Case
 			this.piece.afficher(pt);
 		}
 
-		if(this.casePossible != null)
+		if(this.casePossible != null )
 		{
 			this.casePossible._x = pt.obtenirX();
 			this.casePossible._y = pt.obtenirY();
 		}
-
-		for(i = 0; i < this.listeDesPersonnages.length; i++)
+        var count:Number = this.listeDesPersonnages.length;
+		for(i = 0; i < count; i++)
 		{
 			var pt2:Point = new Point(l,c);
 			this.listeDesPersonnages[i].definirPosition(pt, l, c);
 			this.listeDesPersonnages[i].definirProchainePosition(pt2,"rien");  
-			this.listeDesPersonnages[i].afficher();
+			
+			if( this.listeDesPersonnages[i].getRole() == 1) 
+			   this.listeDesPersonnages[i].afficher();
+				   
+			//if( this.listeDesPersonnages[i].getRole == 2 &&  _level0.loader.contentHolder.objGestionnaireEvenements.typeDeJeu == "Tournament")
+			   //this.listeDesPersonnages[i].cachePersonnage();
 		}
-	}
+	} //end function afficher
 	
 }	// End of Case class

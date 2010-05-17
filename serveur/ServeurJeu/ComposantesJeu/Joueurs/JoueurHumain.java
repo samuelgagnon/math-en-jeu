@@ -13,7 +13,7 @@ public class JoueurHumain extends Joueur
 	private ProtocoleJoueur objProtocoleJoueur;
 	
 	// Cette variable va contenir le nom d'utilisateur du joueur
-	private String strNomUtilisateur;
+	private final String strNomUtilisateur;
 	
 	// Cetta variable contient la clé de la table joueur
 	private int intCleJoueur;
@@ -30,10 +30,21 @@ public class JoueurHumain extends Joueur
 	// Cette variable va contenir le nom de famille du joueur
 	private String strNomFamille;
 	
-	//Cette variable défini si un jouer peut creer une salle
-	private boolean bolPeutCreerSalle;
+	// Used to distinguish between simple user and administrator
+	// 1 - simple user 
+	// 2 - admin
+	// 3 - prof
+	private int role;
+		
+	//Cette variable défini si un jouer peut creer une salle ??? utiliser encore??
+	//private boolean bolPeutCreerSalle;
 	
-	private String cleNiveau;
+	/**
+	 * Déclaration d'un tableau qui contient les valeurs des niveaux des catégories
+	 * pour le profil du joueur - informaton garder dans BD -> user_subject_level
+	 * valeurs possibles -> entre 1 et 16
+	 */
+	private int[] cleNiveau;
 	
 	// Déclaration d'une référence vers la salle dans laquelle le joueur se 
 	// trouve (null si le joueur n'est dans aucune salle)
@@ -62,7 +73,7 @@ public class JoueurHumain extends Joueur
 		super();
 
 		// Faire la référence vers le protocole du joueur
-		objProtocoleJoueur = protocole;
+		setObjProtocoleJoueur(protocole);
 		
 		// Garder en mémoire le nom d'utilisateur, l'adresse IP et le port du
 		// joueur
@@ -73,11 +84,11 @@ public class JoueurHumain extends Joueur
 		// Initialiser les caractéristiques du joueur
 		strPrenom = "";
 		strNomFamille = "";
-		bolPeutCreerSalle = false;
 		
 		// Au début, le joueur n'est dans aucune salle ni table
 		objSalleCourante = null;
 		objPartieCourante = null;
+		
 	}
 
 	/**
@@ -91,6 +102,11 @@ public class JoueurHumain extends Joueur
 	{
 		return objProtocoleJoueur;
 	}
+	
+	public void setObjProtocoleJoueur(ProtocoleJoueur objProtocoleJoueur) {
+		this.objProtocoleJoueur = objProtocoleJoueur;
+	}
+
 	
 	/**
 	 * Cette fonction permet de retourner le nom d'utilisateur du joueur.
@@ -132,16 +148,7 @@ public class JoueurHumain extends Joueur
 		return strPrenom;
 	}
 	
-	/**
-	 * Cette fonction permet de retourner si un joueur peut creer une salle.
-	 * 
-	 * @return boolean : peut ou peut pas creer une salle
-	 */
-	public boolean obtenirPeutCreerSalle()
-	{
-		return bolPeutCreerSalle;
-	}
-	
+		
 	/**
 	 * Cette méthode permet de définir le prénom du joueur.
 	 * 
@@ -172,16 +179,7 @@ public class JoueurHumain extends Joueur
 		strNomFamille = nomFamille;
 	}
 	
-	/**
-	 * Cette méthode permet de définir si un joueur peut creer une salle.
-	 * 
-	 * @param boolean peutCreerSalle : peut ou peux pas creer salle
-	 */
-	public void definirPeutCreerSalles( boolean peutCreerSalle)
-	{
-		bolPeutCreerSalle = peutCreerSalle;
-	}
-	
+		
 	/**
 	 * Cette fonction permet de retourner la référence vers la salle dans 
 	 * laquelle se trouve le joueur présentement.
@@ -251,14 +249,31 @@ public class JoueurHumain extends Joueur
 		objPartieCourante.enleverObjet(intIdObjet, strTypeObjet);
 	}
 
-
-	public String obtenirCleNiveau() 
+    
+	public int[] obtenirCleNiveau() 
 	{
 		return cleNiveau;
 	}
 
-	public void definirCleNiveau(String cleNiveau) 
+	public void definirCleNiveau(int[] cleNiveau) 
 	{
 		this.cleNiveau = cleNiveau;
+	} 
+	
+	/**
+	 * @return the role
+	 */
+	public int getRole() {
+		return role;
 	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRole(int role) {
+		this.role = role;
+	}
+
+	
+	
 }

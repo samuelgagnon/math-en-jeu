@@ -1,16 +1,14 @@
 package ServeurJeu;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.TreeMap;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.List;
 import java.util.Random;
-
+import java.util.Map.Entry;
 import org.apache.log4j.Logger;
-
-import Enumerations.Visibilite;
 import Enumerations.RetourFonctions.ResultatAuthentification;
 import ServeurJeu.BD.GestionnaireBD;
 import ServeurJeu.Communications.GestionnaireCommunication;
@@ -19,25 +17,16 @@ import ServeurJeu.ComposantesJeu.Salle;
 import ServeurJeu.ComposantesJeu.Joueurs.JoueurHumain;
 import ServeurJeu.Evenements.EvenementJoueurDeconnecte;
 import ServeurJeu.Evenements.EvenementJoueurConnecte;
+import ServeurJeu.Evenements.EvenementNouvelleSalle;
 import ServeurJeu.Evenements.GestionnaireEvenements;
 import ServeurJeu.Evenements.InformationDestination;
 import ServeurJeu.Monitoring.TacheLogMoniteur;
 import ServeurJeu.Temps.GestionnaireTemps;
 import ServeurJeu.Temps.TacheSynchroniser;
-import ClassesUtilitaires.Espion;
-import ServeurJeu.ComposantesJeu.ReglesJeu.Regles;
-import ServeurJeu.ComposantesJeu.ReglesJeu.ReglesCaseCouleur;
-import ServeurJeu.ComposantesJeu.ReglesJeu.ReglesCaseSpeciale;
-import ServeurJeu.ComposantesJeu.ReglesJeu.ReglesMagasin;
-import ServeurJeu.ComposantesJeu.ReglesJeu.ReglesObjetUtilisable;
 import ServeurJeu.Configuration.GestionnaireConfiguration;
 import ServeurJeu.ComposantesJeu.Joueurs.ParametreIA;
 import ServeurJeu.Configuration.GestionnaireMessages;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import ServeurJeu.BD.SpyRooms;
 
 
 //TODO: Si un jour on doit modifier le nom d'utilisateur d'un joueur pendant 
@@ -68,7 +57,7 @@ public class ControleurJeu
 {
         // Cette modeDebug est vraie, toute reponse des joueurs sera bonne, et
         // on affichera dans la console des informations sur les communications
-        public static boolean modeDebug;
+    public static boolean modeDebug;
         
 	static private Logger objLogger = Logger.getLogger( ControleurJeu.class );
 	
@@ -91,21 +80,22 @@ public class ControleurJeu
 	// Cet objet est une liste des joueurs qui sont connectés au serveur de jeu 
 	// (cela inclus les joueurs dans les salles ainsi que les joueurs jouant
 	// présentement dans des tables de jeu)
-	private TreeMap lstJoueursConnectes;
+	private TreeMap<String, JoueurHumain> lstJoueursConnectes;
 	
     
     // Déclaration d'une variable pour contenir une liste des joueurs
     // qui ont étés déconnectés et qui étaient en train de joueur une partie
-    private TreeMap lstJoueursDeconnectes;
+    private TreeMap<String, JoueurHumain> lstJoueursDeconnectes;
 	
 	// Cet objet est une liste des salles créées qui se trouvent dans le serveur
-	// de jeu. Chaque élément de cette liste a comme clé le nom de la salle
-	private TreeMap lstSalles;
+	// de jeu. Chaque élément de cette liste a comme clé le id de la salle 
+	private TreeMap<Integer, Salle> lstSalles;
 	
 	// Déclaration de l'objet Espion qui va inscrire des informationsà proppos
 	// du serveur en parallète
-	private Espion objEspion;
+	//private Espion objEspion;
 	
+	private SpyRooms objSpyDB;
 	
 	// Déclaration d'un objet random pour générer des nombres aléatoires
 	private Random objRandom;
@@ -114,28 +104,9 @@ public class ControleurJeu
 	// pour les joueurs virtuels
 	private ParametreIA objParametreIA;
 	
-	/**
-	 * Cette méthode est le point d'entrée du serveur. Elle ne fait que créer 
-	 * un nouveau contrôleur de jeu.
-	 * 
-	 * @param String[] args : les arguments passés en paramètre lors de l'appel
-	 * 						  de l'application 
-	 */
-	//public static void main(String[] args) 
-	//{
-        /* Cette fonction n'est plus utilisée, on utiliser Maitre.java
-         * maintenant
-         *
-        // Initialiser la classe statique GestionnaireMessages
-        GestionnaireMessages.initialiser();
-        
-		System.out.println(GestionnaireMessages.message("controleur_jeu.serveur_demarre"));
-		ControleurJeu objJeu = new ControleurJeu();
-		objJeu.demarrer();
-		System.out.println(GestionnaireMessages.message("controleur_jeu.serveur_arrete"));
-	    */
-	//}
 	
+	
+		
 	/**
 	 * Constructeur de la classe ControleurJeu qui permet de créer le gestionnaire 
 	 * des communications, le gestionnaire d'événements et le gestionnaire de bases 
@@ -153,16 +124,16 @@ public class ControleurJeu
 		objLogger.info(GestionnaireMessages.message("controleur_jeu.serveur_demarre"));
 		
 		// Préparer l'objet pour créer les nombres aléatoires
-                objRandom = new Random();
+        objRandom = new Random();
 		
 		// Créer une liste des joueurs
-		lstJoueursConnectes = new TreeMap();
+		lstJoueursConnectes = new TreeMap<String, JoueurHumain>();
 		
 		// Créer une liste des joueurs déconnectés
-		lstJoueursDeconnectes = new TreeMap();
+		lstJoueursDeconnectes = new TreeMap<String, JoueurHumain>();
 		
 		// Créer une liste des salles
-		lstSalles = new TreeMap();
+		lstSalles = new TreeMap<Integer, Salle>();
 		
 		// Créer un nouveau gestionnaire d'événements
 		objGestionnaireEvenements = new GestionnaireEvenements();
@@ -170,14 +141,18 @@ public class ControleurJeu
 		// Créer un nouveau gestionnaire de base de données MySQL
 		objGestionnaireBD = new GestionnaireBD(this);
 		
-		// Charger les salles par défaut
-		chargerSallesInitiales();
-		
+								
 		objGestionnaireTemps = new GestionnaireTemps();
 		objTacheSynchroniser = new TacheSynchroniser();
 
 		// Créer un nouveau gestionnaire de communication
-		objGestionnaireCommunication = new GestionnaireCommunication(this, objGestionnaireEvenements, objGestionnaireBD, objGestionnaireTemps, objTacheSynchroniser);
+		objGestionnaireCommunication = new GestionnaireCommunication(this, objGestionnaireEvenements);
+		
+		// Fills the rooms from DB
+		objGestionnaireBD.fillsRooms();
+		
+		// Control user accounts to not be blocked
+		objGestionnaireBD.controlPlayerAccount();
 	}
 	
 	public void demarrer()
@@ -193,8 +168,10 @@ public class ControleurJeu
 		// Démarrer le thread du gestionnaire d'événements
 		threadEvenements.start();
 		
+		/***********************
 		// Démarrer l'espion qui écrit dans un fichier périodiquement les
 		// informations du serveur
+		
 		String fichier = config.obtenirString( "controleurjeu.info.fichier-sortie" );
 		int delai = config.obtenirNombreEntier( "controleurjeu.info.delai" );
 		objEspion = new Espion(this, fichier, delai, ClassesUtilitaires.Espion.MODE_FICHIER_TEXTE);
@@ -202,7 +179,17 @@ public class ControleurJeu
         // Démarrer la thread de l'espion
 		Thread threadEspion = new Thread(objEspion);
 		threadEspion.start();
-
+        *********************************/
+		//Start spyDb to update periodically the rooms list
+		// Add new rooms or out the olds 
+		
+		int delay = 60000;
+		objSpyDB = new SpyRooms(this, delay); 
+		//Start spy thread's
+		Thread threadSpy = new Thread(objSpyDB);
+		threadSpy.start();
+		
+		
         // Créer une instance de la classe regroupant tous les paramètres
         // des joueurs virtuels
         objParametreIA = new ParametreIA();
@@ -278,6 +265,7 @@ public class ControleurJeu
 	public String authentifierJoueur(ProtocoleJoueur protocole, String nomUtilisateur, 
 	        						 String motDePasse, boolean doitGenererNoCommandeRetour)
 	{
+				
 	    // Déclaration d'une variable qui va contenir le résultat à retourner
 	    // à la fonction appelante, soit les valeurs de l'énumération 
 	    // ResultatAuthentification
@@ -299,6 +287,8 @@ public class ControleurJeu
 			// Trouver les informations sur le joueur dans la BD et remplir le 
 			// reste des champs tels que les droits
 			objGestionnaireBD.remplirInformationsJoueur(objJoueurHumain);
+			
+			
 			
 			// À ce moment, comme il se peut que le même joueur tente de se 
 			// connecter en même temps par 2 protocoles de joueur, alors si
@@ -349,6 +339,7 @@ public class ControleurJeu
 				}
 			}
 		}
+		
 		
 		return strResultatAuthentification;
 	}
@@ -405,6 +396,8 @@ public class ControleurJeu
 			joueur.obtenirSalleCourante().quitterSalle(joueur, false, !ajouterJoueurDeconnecte);
 		}
 		
+		// fill in DB the date and time of of last connection with server
+		this.objGestionnaireBD.fillEndDate(joueur.obtenirCleJoueur());
 		
 		// Empêcher d'autres thread de venir utiliser la liste des joueurs
 		// connectés au serveur de jeu pendant qu'on déconnecte le joueur
@@ -444,7 +437,7 @@ public class ControleurJeu
 	 * 				l'être par l'appelant de cette fonction tout dépendant
 	 * 				du traitement qu'elle doit faire
 	 */
-	public TreeMap obtenirListeJoueurs()
+	public TreeMap<String, JoueurHumain> obtenirListeJoueurs()
 	{
 		return lstJoueursConnectes;
 	}
@@ -462,55 +455,67 @@ public class ControleurJeu
 	 * 				l'ajout et/ou au retrait d'une salle, car ça ne peut pas
 	 * 				se produire.
 	 */
-	public TreeMap obtenirListeSalles(String langue, String gameType)
+	public TreeMap<Integer, Salle> obtenirListeSalles(String language)
 	{
-            // On crée une liste de salles vide, et on parcourt toutes les salles connues
-            TreeMap copieListeSalles = (TreeMap)lstSalles.clone();
+		synchronized(lstSalles){
+	        // On crée une liste de salles vide, et on parcourt toutes les salles connues
+            TreeMap<Integer, Salle> copieListeSalles = (TreeMap<Integer, Salle>) lstSalles.clone();
             copieListeSalles.clear();
-            Set keySet = lstSalles.keySet();
-            Iterator it = keySet.iterator();
-            while (it.hasNext())
-            {
-                String key = (String)it.next();
-                Salle salle = (Salle)lstSalles.get(key);
-                
-                // On vérifie si cette salle est du bon gameType
-                // et si elle permet de jouer dans la langue donnée
-                Boolean estDuBonGameType = gameType.equals(salle.obtenirGameType());
-                Boolean permetCetteLangue = false;
-                NodeList listeDeLangues = salle.obtenirNoeudLangue().getChildNodes();
-                for(int j=0; j<listeDeLangues.getLength() && !permetCetteLangue; j++)
-                {
-                    if(listeDeLangues.item(j).getNodeType()==1 && listeDeLangues.item(j).getNodeName().equals(langue)) permetCetteLangue = true;
-                }
-                
-                // Si les paramètres en entrée sont des strings vides,
-                // alors on ignore le paramètre correspondant
-                if(gameType.equals("")) estDuBonGameType = true;
-                if(langue.equals("")) permetCetteLangue = true;
-                
-                // On ajoute la salle à la liste si elle correspond à ce qu'on veut
-                if(permetCetteLangue && estDuBonGameType) copieListeSalles.put(key, salle);
+            Set<Integer> keySet = lstSalles.keySet();
+            Iterator<Integer> it = keySet.iterator();
+            //boolean repeat = true;
+           
+            while (it.hasNext())//&& repeat)
+            { 
+            	int key = (int)it.next();
+            	Salle salle = (Salle)lstSalles.get(key);
+            	
+            	// here we test if the room has the language of player
+            	Boolean permetCetteLangue = objGestionnaireBD.roomLangControl(salle, language);
+
+            	// Si les paramètres en entrée sont des strings vides,
+            	// alors on ignore le paramètre correspondant
+            	if(language.equals("")) permetCetteLangue = true;
+
+            	// On ajoute la salle à la liste si elle correspond à ce qu'on veut
+            	if(permetCetteLangue) 
+            	{
+            		copieListeSalles.put(key, salle);
+               	}
+
+
             }
+            
             return copieListeSalles;
+		}
 	}
 
 	/**
-	 * Cette fonction permet de déterminer si la salle dont le nom est passé
+	 * Cette fonction permet de déterminer si la salle dont le id est passé
 	 * en paramètres existe déjà ou non.
 	 * 
 	 * @param String nomSalle : Le nom de la salle
 	 * @return false : La salle n'existe pas 
 	 * 		   true  : La salle existe déjà
-	 * @synchronism Cette fonction n'a pas besoin d'être synchronisée car
-	 * 				on ne peut pas ajouter ou enlever des salles par le
-	 * 				serveur de jeu (sauf quand celui-ci démarre, mais aucun
-	 * 				joueur n'est connecté à ce moment-là)
+	 * 
 	 */
-	public boolean salleExiste(String nomSalle)
+	public boolean salleExiste(int idRoom)
 	{
 		// Retourner si la salle existe déjà ou non
-		return lstSalles.containsKey(nomSalle);	        
+		synchronized(lstSalles){
+		   return lstSalles.containsKey(idRoom);//objGestionnaireBD.getFullRoomName(nomSalle));
+		}
+	}
+	
+	public String getRoomName(int idRoom, String lang)
+	{
+		// Retourner si la salle existe déjà ou non
+		synchronized(lstSalles){
+		   if(lstSalles.containsKey(idRoom))
+			return lstSalles.get(idRoom).getRoomName(lang);
+		   else
+			return "Not exist";
+		}
 	}
 	
 	/**
@@ -521,12 +526,75 @@ public class ControleurJeu
 	 * @synchronism Cette fonction n'a pas besoin d'être synchronisée car
 	 * 				elle est exécutée seulement lors du démarrage du serveur
 	 * 				et il n'y a aucun joueur de connecté à ce moment là.
+	 *    !!! add synchronism because need to add rooms dinamicaly during 
+	 *    the time of life of controler        
 	 */
 	public void ajouterNouvelleSalle(Salle nouvelleSalle)
 	{
 	    // Ajouter la nouvelle salle dans la liste des salles du 
 	    // contrôleur de jeu
-	    lstSalles.put(nouvelleSalle.obtenirNomSalle(), nouvelleSalle);	        
+		synchronized(lstSalles){
+		   lstSalles.put(nouvelleSalle.getRoomID(), nouvelleSalle);
+		  // System.out.println(nouvelleSalle.getRoomID() + " NEW " + nouvelleSalle.toString());	
+		}
+	}
+	
+	/**
+	 * This methode is used to close the room for future games
+	 * @param 
+	 * TODO need to verify the params
+	 */
+	public void closeRoom (Salle room){
+		synchronized(lstSalles){
+			
+			   lstSalles.remove(room.getRoomID());
+			}
+	}// end methode
+	
+	/**
+	 * This methode is used to remove the rooms from the list of Controleur if 
+	 * the date of expiration is arrived. In the same time on return for SpyRooms
+	 * the list of ID of rooms rested in the list
+	 */
+	public ArrayList<Integer> removeOldRooms()
+	{
+		ArrayList<Integer> rooms = new ArrayList<Integer>();
+		ArrayList<Integer> roomsToRemove = new ArrayList<Integer>();
+		synchronized(lstSalles){
+			
+			Set<Integer> keySet = lstSalles.keySet();
+            Iterator<Integer> it = keySet.iterator();
+                      
+            while (it.hasNext())
+            { 
+            	int key = (int)it.next();
+                Salle salle = (Salle)lstSalles.get(key);
+                
+                if (salle.getEndDate()!= null)
+                {
+                	if (salle.getEndDate().before(new Date(System.currentTimeMillis()))){
+                		roomsToRemove.add(key);
+                	    //System.out.println(key + "remove" + salle.getEndDate());
+                	}
+                	else{ 
+                		rooms.add(key);
+                	    //System.out.println(key + "SSS");
+                	}
+                }else if (salle.getEndDate()== null){
+                	rooms.add(key);
+            	    //System.out.println(key + "SSSx");
+                }
+                
+                	
+			}
+        }
+		synchronized(lstSalles){
+		   for(int room : roomsToRemove){
+		 		   lstSalles.remove(room); 
+ 		   }
+		}
+		
+		return rooms;
 	}
 	
 	/**
@@ -544,16 +612,15 @@ public class ControleurJeu
 	 * @return false : Le mot de passe pour entrer dans la salle n'est pas
 	 * 				   le bon
 	 * 		   true  : Le joueur a réussi à entrer dans la salle
-	 * @synchronism Cette fonction n'a pas besoin d'être synchronisée, car 
-	 * 				elle ne modifie pas la liste des salles et aucune autre
-	 * 				fonction ne le fait. Cependant, la méthode entrerSalle
-	 * 				de la salle devra être synchronisée.
+	 * 
 	 */
-	public boolean entrerSalle(JoueurHumain joueur, String nomSalle, 
+	public boolean entrerSalle(JoueurHumain joueur, int idRoom, 
 	        				   String motDePasse, boolean doitGenererNoCommandeRetour)
 	{
-		// On retourne le résultat de l'entrée du joueur dans la salle
-		return ((Salle) lstSalles.get(nomSalle)).entrerSalle(joueur, motDePasse, doitGenererNoCommandeRetour);
+		synchronized(lstSalles){
+    		// On retourne le résultat de l'entrée du joueur dans la salle
+	    	return ((Salle) lstSalles.get(idRoom)).entrerSalle(joueur, motDePasse, doitGenererNoCommandeRetour);
+		}
 	}
 	
 	/**
@@ -578,16 +645,16 @@ public class ControleurJeu
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueursConnectes (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueursConnectes.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueursConnectes.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs connectés et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String, JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 			// Si le nom d'utilisateur du joueur courant n'est pas celui
 			// qui vient de se connecter au serveur de jeu, alors on peut
@@ -603,6 +670,68 @@ public class ControleurJeu
 		
 		// Ajouter le nouvel événement créé dans la liste d'événements à traiter
 		objGestionnaireEvenements.ajouterEvenement(joueurConnecte);
+	}
+	
+	/**
+	 * Cette méthode permet de préparer l'événement de la création d'une 
+	 * nouvelle salle dans le serveur apres l'ajout d'elle dans BD. 
+	 * Cette méthode va passer tous les joueurs connectés et pour ceux devant être avertis 
+	 * (tous sauf le joueur courant passé en paramètre), on va obtenir un numéro 
+	 * de commande, on va créer un InformationDestination et on va ajouter 
+	 * l'événement dans la file d'événements du gestionnaire d'événements. 
+	 * Lors de l'appel de cette fonction, la liste des joueurs est 
+	 * synchronisée.
+	 *
+	 * @param int roomID : Le numéro de la Salle créé
+	 * @param String roomName : Le nom de la Salle
+	 * @param String strCreatorUserName : Le nom d'utilisateur du joueur qui
+	 * 								  a créé la table
+	 * @param int maxnbplayers : Le numéro maximal des joueurs dans les tables
+	 *                           de cette Salle
+	 * @param String gameType : Contient le type de jeu (ex. mathEnJeu)
+	 * @param Boolea protegee : Si la Salle est protegee par mot de passe
+	 * @param String roomDescription : Court description de la Salle
+	 * @param int masterTime : Le temps par default d'une partie dans la Salle
+	 * 
+	 * @synchronism Cette fonction n'est pas synchronisée ici, mais elle l'est
+	 * 				par l'appelant ().
+	 */
+	public void preparerEvenementNouvelleSalle(String roomName, Boolean protegee, String strCreatorUserName, String gameType, 
+    		String roomDescription, int maxnbplayers, int masterTime, int roomID)
+	{
+	    // Créer un nouvel événement qui va permettre d'envoyer l'événement 
+	    // aux joueurs qu'une table a été créée
+	    EvenementNouvelleSalle nouvelleSalle = new EvenementNouvelleSalle(roomName, protegee, strCreatorUserName, gameType, 
+	    		roomDescription, maxnbplayers, masterTime, roomID);
+	    
+	    // Créer un ensemble contenant tous les tuples de la liste 
+		// lstJoueursConnectes (chaque élément est un Map.Entry)
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueursConnectes.entrySet();
+		
+		// Obtenir un itérateur pour l'ensemble contenant les joueurs
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
+		
+		
+		// Passer tous les joueurs de la salle et leur envoyer un événement
+		while (objIterateurListe.hasNext() == true)
+		{
+			// Créer une référence vers le joueur humain courant dans la liste
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String,JoueurHumain>)(objIterateurListe.next())).getValue());
+			
+			// Si le nom d'utilisateur du joueur courant n'est pas celui
+			// qui vient de créer la table, alors on peut envoyer un 
+			// événement à cet utilisateur
+			if (objJoueur.obtenirNomUtilisateur().equals(strCreatorUserName) == false)
+			{
+			    // Obtenir un numéro de commande pour le joueur courant, créer 
+			    // un InformationDestination et l'ajouter à l'événement
+				nouvelleSalle.ajouterInformationDestination(new InformationDestination(objJoueur.obtenirProtocoleJoueur().obtenirNumeroCommande(),
+			            											objJoueur.obtenirProtocoleJoueur()));
+			}
+		}
+		
+		// Ajouter le nouvel événement créé dans la liste d'événements à traiter
+		objGestionnaireEvenements.ajouterEvenement(nouvelleSalle);
 	}
 	
 	/**
@@ -627,16 +756,16 @@ public class ControleurJeu
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueursConnectes (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueursConnectes.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueursConnectes.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs connectés et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String, JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 			// Si le nom d'utilisateur du joueur courant n'est pas celui
 			// qui vient de se déconnecter du serveur de jeu, alors on peut
@@ -654,100 +783,7 @@ public class ControleurJeu
 		objGestionnaireEvenements.ajouterEvenement(joueurDeconnecte);
 	}
 	
-	/**
-	 * Cette méthode permet de charger les salles initiales en mémoire 
-	 * à partir de la configuration XML
-	 */
-	private void chargerSallesInitiales()
-	{
-                int i;
-		GestionnaireConfiguration config = GestionnaireConfiguration.obtenirInstance();
-                Regles objReglesSalle = new Regles();
-		TreeSet casesCouleur = objReglesSalle.obtenirListeCasesCouleurPossibles();
-		TreeSet casesSpeciale = objReglesSalle.obtenirListeCasesSpecialesPossibles();
-		TreeSet objetsUtilisables = objReglesSalle.obtenirListeObjetsUtilisablesPossibles();
-                TreeSet magasins = objReglesSalle.obtenirListeMagasinsPossibles();
-                
-                // First, we load the rules that are the same for every room
-                
-                // Get the list of shops
-                Document documentConfig = config.getDocument();
-                NodeList listeDeMagasins = documentConfig.getElementsByTagName("magasin");
-                for(i=0; i<listeDeMagasins.getLength(); i++)
-                {
-                    NamedNodeMap attributs = listeDeMagasins.item(i).getAttributes();
-                    Integer tmp1 = Integer.valueOf(attributs.getNamedItem("priorite").getNodeValue());
-                    String tmp2 = attributs.getNamedItem("nom").getNodeValue();
-                    magasins.add(new ReglesMagasin(tmp1, tmp2));
-                }
-                
-		objReglesSalle.definirPermetChat( config.obtenirValeurBooleenne( "controleurjeu.salles-initiales.regles.chat" ) );
-		objReglesSalle.definirRatioTrous( config.obtenirNombreDecimal( "controleurjeu.salles-initiales.regles.ratio-trous" ) );
-		objReglesSalle.definirRatioMagasins( config.obtenirNombreDecimal( "controleurjeu.salles-initiales.regles.ratio-magasins" ) );
-		objReglesSalle.definirRatioCasesSpeciales(config.obtenirNombreDecimal( "controleurjeu.salles-initiales.regles.ratio-cases-speciales" ) );
-		objReglesSalle.definirRatioPieces( config.obtenirNombreDecimal( "controleurjeu.salles-initiales.regles.ratio-pieces" ) );
-		objReglesSalle.definirRatioObjetsUtilisables(config.obtenirNombreDecimal( "controleurjeu.salles-initiales.regles.ratio-objets-utilisables" ) );
-		objReglesSalle.definirValeurPieceMaximale(config.obtenirNombreEntier( "controleurjeu.salles-initiales.regles.valeur-piece-maximale" ) );
-		objReglesSalle.definirTempsMinimal( config.obtenirNombreEntier( "controleurjeu.salles-initiales.regles.temps-minimal" ) );
-		objReglesSalle.definirTempsMaximal( config.obtenirNombreEntier( "controleurjeu.salles-initiales.regles.temps-maximal" ) );
-		objReglesSalle.definirDeplacementMaximal( config.obtenirNombreEntier( "controleurjeu.salles-initiales.regles.deplacement-maximal" ) );
-
-                List propTypeCaseSpeciale = config.obtenirListe("controleurjeu.salles-initiales.regles.case-speciale.type");
-                List propPrioriteCaseSpeciale = config.obtenirListe("controleurjeu.salles-initiales.regles.case-speciale.priorite");
-                for(i=1; i <= propTypeCaseSpeciale.size(); i++)
-                {
-                    Integer tmp1 = Integer.valueOf((String)propPrioriteCaseSpeciale.get(i-1));
-                    Integer tmp2 = Integer.valueOf((String)propTypeCaseSpeciale.get(i-1));
-                    casesSpeciale.add(new ReglesCaseSpeciale(tmp1, tmp2));
-                }
-                
-                List propTypeCaseCouleur = config.obtenirListe("controleurjeu.salles-initiales.regles.case-couleur.type");
-                List propPrioriteCaseCouleur = config.obtenirListe("controleurjeu.salles-initiales.regles.case-couleur.priorite");
-                for(i=1; i <= propTypeCaseCouleur.size(); i++)
-                {
-                    Integer tmp1 = Integer.valueOf((String)propPrioriteCaseCouleur.get(i-1));
-                    Integer tmp2 = Integer.valueOf((String)propTypeCaseCouleur.get(i-1));
-                    casesCouleur.add(new ReglesCaseCouleur(tmp1, tmp2));
-                }
-                
-                List propNomsObjetUtilisable = config.obtenirListe("controleurjeu.salles-initiales.regles.objet-utilisable.nom");
-                List propPrioriteObjetUtilisable = config.obtenirListe("controleurjeu.salles-initiales.regles.objet-utilisable.priorite");
-                for(i=1; i <= propNomsObjetUtilisable.size(); i++)
-                {
-                    Integer tmp1 = Integer.valueOf((String)propPrioriteObjetUtilisable.get(i-1));
-                    String tmp2 = (String)propNomsObjetUtilisable.get(i-1);
-                    objetsUtilisables.add(new ReglesObjetUtilisable(tmp1, tmp2, Visibilite.Aleatoire));
-                }
-                
-                // Now, we load room-specific settings (as well as the actual rooms)
-                
-                // Get the list of rooms
-                NodeList listeDeSalles = documentConfig.getElementsByTagName("salle");
-                for(i=0; i<listeDeSalles.getLength(); i++)
-                {
-                    String nom = "";
-                    String createur = "";
-                    String motDePasse = "";
-                    String gameType = "";
-                    Node noeudLangue = listeDeSalles.item(i);
-                    NodeList parametresSalle = listeDeSalles.item(i).getChildNodes();
-                    for(int j=0; j<parametresSalle.getLength(); j++)
-                    {
-                        // If it's the kind of node we want, load the parameters
-                        if(parametresSalle.item(j).getNodeType()==1)
-                        {
-                            if(parametresSalle.item(j).getNodeName().equals("nom")) nom = parametresSalle.item(j).getTextContent();
-                            else if(parametresSalle.item(j).getNodeName().equals("createur")) createur = parametresSalle.item(j).getTextContent();
-                            else if(parametresSalle.item(j).getNodeName().equals("mot-de-passe")) motDePasse = parametresSalle.item(j).getTextContent();
-                            else if(parametresSalle.item(j).getNodeName().equals("langue")) noeudLangue = parametresSalle.item(j);
-                            else if(parametresSalle.item(j).getNodeName().equals("gameType")) gameType = parametresSalle.item(j).getTextContent();
-                        }
-                    }
-                    Salle objSalle = new Salle(objGestionnaireBD, nom, createur, motDePasse, objReglesSalle, this, noeudLangue, gameType);
-                    ajouterNouvelleSalle(objSalle);
-                }
-	}
-	
+		
 	public GestionnaireCommunication obtenirGestionnaireCommunication()
 	{
 		return objGestionnaireCommunication;
@@ -826,7 +862,7 @@ public class ControleurJeu
     	}
     }
     
-    public TreeMap obtenirListeJoueursDeconnectes()
+    public TreeMap<String, JoueurHumain> obtenirListeJoueursDeconnectes()
     {
     	return lstJoueursDeconnectes;
     }

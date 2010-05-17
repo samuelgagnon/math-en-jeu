@@ -9,7 +9,7 @@ import java.io.IOException;
 public abstract class Evenement
 {
 	// Déclaration d'une liste de InformationDestination
-	protected Vector lstInformationDestination = new Vector();
+	protected Vector<InformationDestination> lstInformationDestination = new Vector<InformationDestination>();
 	
 	/**
 	 * Cette fonction permet d'ajouter un nouveau InformationDestination à la
@@ -61,7 +61,7 @@ public abstract class Evenement
 	        }
 	        catch (IOException ioe)
 	        {
-				//System.out.println("L'evenement courant n'a pas pu etre envoye");
+				System.out.println("L'evenement courant n'a pas pu etre envoye");
 	        }
 	    }
 	    

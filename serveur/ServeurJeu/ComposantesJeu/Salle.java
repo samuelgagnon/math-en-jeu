@@ -1,10 +1,17 @@
 package ServeurJeu.ComposantesJeu;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
+
+import Enumerations.Categories;
 import Enumerations.RetourFonctions.ResultatEntreeTable;
 import ServeurJeu.BD.GestionnaireBD;
 import ServeurJeu.ComposantesJeu.Joueurs.JoueurHumain;
@@ -15,11 +22,7 @@ import ServeurJeu.Evenements.EvenementNouvelleTable;
 import ServeurJeu.Evenements.EvenementTableDetruite;
 import ServeurJeu.Evenements.GestionnaireEvenements;
 import ServeurJeu.Evenements.InformationDestination;
-import ServeurJeu.Temps.GestionnaireTemps;
-import ServeurJeu.Temps.TacheSynchroniser;
 import ServeurJeu.ControleurJeu;
-import ServeurJeu.Configuration.GestionnaireConfiguration;
-import org.w3c.dom.Node;
 
 //TODO: Le mot de passe d'une salle ne doit pas être modifiée pendant le jeu,
 //      sinon il va falloir ajouter des synchronisations à chaque fois qu'on
@@ -32,47 +35,71 @@ public class Salle
 	// Déclaration d'une référence vers le gestionnaire d'événements
 	private GestionnaireEvenements objGestionnaireEvenements;
 	
-	// Déclaration d'une référence vers le contrôleur de jeu
+	// Déclaration d'une référence vers le contr™leur de jeu
 	private ControleurJeu objControleurJeu;
 	
 	// Déclaration d'une référence vers le gestionnaire de bases de données
 	private GestionnaireBD objGestionnaireBD;
 	
 	// Cette variable va contenir le nom de la salle
-	private String strNomSalle;
+	private final String strNomSalle;
 
 	// Cette variable va contenir le mot de passe permettant d'accéder à la salle
-	private String strMotDePasse;
+	private final String strPassword;
 	
 	// Cette variable va contenir le nom d'utilisateur du créateur de cette salle
-	private String strNomUtilisateurCreateur;
+	private final String strCreatorUserName;
         
-        // Contient le type de jeu (ex. mathEnJeu)
-        private String gameType;
+    // Contient le type de jeu (ex. mathEnJeu)
+	private final String gameType;
+	
+	private GenerateurPartie gameFactory;
+	
+	//Room short description
+	private String roomDescription;
 	
 	// Cet objet est une liste de numéros utilisés pour les tables (sert à 
 	// générer de nouvelles tables)
-	private TreeSet lstNoTables;
+	private TreeSet<Integer> lstNoTables;
 	
 	// Cet objet est une liste des joueurs qui sont présentement dans cette salle
-	private TreeMap lstJoueurs;
+	private TreeMap<String, JoueurHumain> lstJoueurs;
 	
 	// Cet objet est une liste des tables qui sont présentement dans cette salle
-	private TreeMap lstTables;
+	private TreeMap<Integer, Table> lstTables;
 	
 	// Cet objet permet de déterminer les règles de jeu pour cette salle
 	private Regles objRegles;
-        
-        // Contenu du noeud langue de cette salle dans le fichier de configuration
-        private Node noeudLangue;
-        
-        // This is the maximum number of coins and items a player can hold at one time
-        public static int maxPossessionPieceEtObjet = Integer.parseInt(GestionnaireConfiguration.obtenirInstance().obtenirString("controleurjeu.salles-initiales.regles.max-possession-objets-et-pieces"));
+	
+	// Date when room will be activated
+	private Date beginDate;
+	
+	// Date untill room will be activ
+	private Date endDate;
+	
+	// ID in DB.  
+	private final int roomID;
+	
+	//default time for the room 
+	private final int masterTime;
+	
+	//use all general categories or only room's specyfied categories
+	//private final boolean roomCategories;
+	
+	//specifyed room's categories
+	private final ArrayList<Integer> categories;
+	
+	// last room number
+	// used to give the numbers to the created tables in this room
+	private int lastNumber;
+	
+	   
 	
 	/**
 	 * Constructeur de la classe Salle qui permet d'initialiser les membres 
 	 * privés de la salle. Ce constructeur a en plus un mot de passe permettant
 	 * d'accéder à la salle.
+	 * @param roomCategories 
 	 * 
 	 * @param GestionnaireBD gestionnaireBD : Le gestionnaire de base de données
 	 * @param String nomSalle : Le nom de la salle
@@ -81,46 +108,101 @@ public class Salle
 	 * @param String motDePasse : Le mot de passe
 	 * @param Regles reglesSalle : Les règles de jeu pour la salle courante
 	 */
-	public Salle(GestionnaireBD gestionnaireBD, 
-				 String nomSalle, String nomUtilisateurCreateur, String motDePasse, 
-				 Regles reglesSalle, ControleurJeu controleurJeu, Node noeudLangue, String gameType)
+	public Salle(String nomSalle, String nomUtilisateurCreateur, String motDePasse, 
+				 Regles reglesSalle, ControleurJeu controleurJeu, String gameType, 
+				 int roomID, Date beginDate, Date endDate, int masterTime)
 	{
 		super();
 		
 		// Faire la référence vers le gestionnaire d'événements et le 
 		// gestionnaire de base de données
 		objGestionnaireEvenements = new GestionnaireEvenements();
-		objGestionnaireBD = gestionnaireBD;
+		objGestionnaireBD = controleurJeu.obtenirGestionnaireBD();
 		
 		// Garder en mémoire le nom de la salle, le nom d'utilisateur du 
 		// créateur de la salle et le mot de passe
 		strNomSalle = nomSalle;
-		strNomUtilisateurCreateur = nomUtilisateurCreateur;
-		strMotDePasse = motDePasse;
+		 
+		strCreatorUserName = nomUtilisateurCreateur;
+		strPassword = motDePasse;
+		//System.out.println(strPassword);
                 
-                // Type de jeu de la salle
-                this.gameType = gameType;
+        // Type de jeu de la salle
+        this.gameType = gameType;
+        this.roomID = roomID;
+        this.setBeginDate(beginDate);
+        this.setEndDate(endDate);
+        this.masterTime = masterTime;
+        //this.roomCategories = roomCategories;
+        
+        categories = new ArrayList<Integer>();
 		
 		// Créer une nouvelle liste de joueurs, de tables et de numéros
-		lstJoueurs = new TreeMap();
-		lstTables = new TreeMap();
-		lstNoTables = new TreeSet();
+		lstJoueurs = new TreeMap <String, JoueurHumain>();
+		lstTables = new TreeMap <Integer, Table>();
+		lstNoTables = new TreeSet <Integer>();
 		
 		// Définir les règles de jeu pour la salle courante
 		objRegles = reglesSalle;
                 
-                // On définit le noeud XML contenant les paramètres de la langue
-                this.noeudLangue = noeudLangue;
-		
-		// Faire la référence vers le controleur de jeu
-		objControleurJeu = controleurJeu;
+        // Faire la référence vers le controleur de jeu
+		setObjControleurJeu(controleurJeu);
 		
 		// Créer un thread pour le GestionnaireEvenements
 		Thread threadEvenements = new Thread(objGestionnaireEvenements);
 		
 		// Démarrer le thread du gestionnaire d'événements
 		threadEvenements.start();
+		
+		this.gameFactory = null;
+		
+		try {
+			this.gameFactory = (GenerateurPartie) Class.forName("ServeurJeu.ComposantesJeu.GenerateurPartie" + gameType).newInstance();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
+
+	/**
+	 * @return the beginDate
+	 */
+	public Date getBeginDate() {
+		return beginDate;
+	}
+
+	
+	/**
+	 * @return the endDate
+	 */
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	
+	/**
+	 * @param beginDate the beginDate to set
+	 */
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	
+	/**
+	 * @param endDate the endDate to set
+	 */
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	
 
 	/**
 	 * Cette fonction permet de générer un nouveau numéro de table.
@@ -135,13 +217,15 @@ public class Salle
 	{
 		// Déclaration d'une variable qui va contenir le numéro de table
 		// généré
-		int intNoTable = 1;
-		
+		int intNoTable = getLastNumber() + 1;
+				
 		// Boucler tant qu'on n'a pas trouvé de numéro n'étant pas utilisé
 		while (lstNoTables.contains(new Integer(intNoTable)) == true)
 		{
 			intNoTable++;
 		}
+		
+		setLastNumber(intNoTable);
 		
 		return intNoTable;
 	}
@@ -175,7 +259,8 @@ public class Salle
 		// Si le mot de passe est le bon, alors on ajoute le joueur dans la liste
 		// des joueurs de cette salle et on envoit un événement aux autres
 		// joueurs de cette salle pour leur dire qu'il y a un nouveau joueur
-		if (strMotDePasse.equals(motDePasse))
+		
+		if (getStrPassword().equals(objGestionnaireBD.controlPWD(motDePasse)))
 		{
 		    // Empêcher d'autres thread de toucher à la liste des joueurs de 
 		    // cette salle pendant l'ajout du nouveau joueur dans cette salle
@@ -203,7 +288,9 @@ public class Salle
 				// dans la file de gestion d'événements
 				preparerEvenementJoueurEntreSalle(joueur.obtenirNomUtilisateur());
 		    }
-		
+				    
+		    objGestionnaireBD.fillUserLevels(joueur, this);
+		   
 			// On retourne vrai
 			return true;
 		}
@@ -277,6 +364,8 @@ public class Salle
 	 * Cette méthode permet de créer une nouvelle table et d'y faire entrer le
 	 * joueur qui en fait la demande. On suppose que le joueur n'est pas dans 
 	 * aucune autre table.
+	 * @param intNbColumns 
+	 * @param intNbLines 
 	 * 
 	 * @param JoueurHumain joueur : Le joueur demandant de créer la table
 	 * @param int tempsPartie : Le temps que doit durer la partie
@@ -293,7 +382,7 @@ public class Salle
 	 * 				joueurs de la salle et leur envoyer un événement. La
 	 * 				fonction entrerTable est synchronisée automatiquement.
 	 */
-	public int creerTable(JoueurHumain joueur, int tempsPartie, boolean doitGenererNoCommandeRetour, GestionnaireTemps gestionnaireTemps, TacheSynchroniser tacheSynchroniser )
+	public int creerTable(JoueurHumain joueur, int tempsPartie, boolean doitGenererNoCommandeRetour, String name, int intNbLines, int intNbColumns)
 	{
 		// Déclaration d'une variable qui va contenir le numéro de la table
 		int intNoTable;
@@ -302,16 +391,12 @@ public class Salle
 	    // cette salle pendant la création de la table
 	    synchronized (lstTables)
 	    {
-	    		////////////
-	    	// ATTENTION TODO 
-	    	// changer cette ligne pour modifier le but du jeu (la variable butDuJeu)
-	    		////////////
 	    	
 	    	// Créer une nouvelle table en passant les paramètres appropriés
-	    
-	    	Table objTable = new Table( objGestionnaireBD, this, genererNoTable(), joueur.obtenirNomUtilisateur(), tempsPartie, objRegles, gestionnaireTemps, tacheSynchroniser, objControleurJeu, "original");
-	    	//Table objTable = new Table( objGestionnaireBD, this, genererNoTable(), joueur.obtenirNomUtilisateur(), tempsPartie, objRegles, gestionnaireTemps, tacheSynchroniser, objControleurJeu, "winTheGameWithScore");
+	    	Table objTable = new Table( this, genererNoTable(), joueur, tempsPartie, name, intNbLines, intNbColumns);
+	    		    	
 	    	objTable.creation();
+	    		    	
 	    	// Ajouter la table dans la liste des tables
 	    	lstTables.put(new Integer(objTable.obtenirNoTable()), objTable);
 	    	
@@ -336,12 +421,12 @@ public class Salle
 				// Cette fonction va passer les joueurs et créer un 
 				// InformationDestination pour chacun et ajouter l'événement 
 				// dans la file de gestion d'événements
-				preparerEvenementNouvelleTable(objTable.obtenirNoTable(), tempsPartie, joueur.obtenirNomUtilisateur());
+				preparerEvenementNouvelleTable(objTable.obtenirNoTable(), tempsPartie, joueur.obtenirNomUtilisateur(), objTable.getTableName());
 		    }
 
 		    // Entrer dans la table on ne fait rien avec la liste des 
 		    // personnages
-		    objTable.entrerTable(joueur, false, new TreeMap());
+		    objTable.entrerTable(joueur, false);
 		    
 		    // Garder le numéro de table pour le retourner
 		    intNoTable = objTable.obtenirNoTable();
@@ -353,6 +438,7 @@ public class Salle
 	/**
 	 * Cette fonction permet au joueur d'entrer dans la table désirée. On 
 	 * suppose que le joueur n'est pas dans aucune table.
+	 * @param humains 
 	 * 
 	 * @param JoueurHumain joueur : Le joueur demandant d'entrer dans la table
 	 * @param int noTable : Le numéro de la table dans laquelle entrer
@@ -361,7 +447,8 @@ public class Salle
 	 * 								l'appel de fonction
 	 * @param TreeMap listePersonnageJoueurs : La liste des joueurs dont la clé 
 	 * 								est le nom d'utilisateur du joueur et le contenu 
-	 * 								est le Id du personnage choisi 
+	 * 								est le Id du joueur 
+	 * 
 	 * @return String : Succes : Le joueur est maintenant dans la table
 	 * 		   			TableNonExistante : Le joueur a tenté d'entrer dans une
 	 * 										table non existante
@@ -376,7 +463,7 @@ public class Salle
 	 * 				courante qui a des chances d'être détruite si le joueur 
 	 * 				qui veut quitter est le dernier de la table.
 	 */
-	public String entrerTable(JoueurHumain joueur, int noTable, boolean doitGenererNoCommandeRetour, TreeMap listePersonnageJoueurs)
+	public String entrerTable(JoueurHumain joueur, int noTable, boolean doitGenererNoCommandeRetour)
 	{
 	    // Déclaration d'une variable qui va contenir le résultat à retourner
 	    // à la fonction appelante, soit les valeurs de l'énumération 
@@ -417,7 +504,7 @@ public class Salle
 			else
 			{
 				// Appeler la méthode permettant d'entrer dans la table
-				((Table) lstTables.get(new Integer(noTable))).entrerTable(joueur, doitGenererNoCommandeRetour, listePersonnageJoueurs);
+				((Table) lstTables.get(new Integer(noTable))).entrerTableAutres(joueur, doitGenererNoCommandeRetour);
 				
 				// Il n'y a eu aucun problème pour entrer dans la table
 				strResultatEntreeTable = ResultatEntreeTable.Succes;
@@ -478,7 +565,7 @@ public class Salle
 	 * 				l'être par l'appelant de cette fonction tout dépendant
 	 * 				du traitement qu'elle doit faire
 	 */
-	public TreeMap obtenirListeJoueurs()
+	public TreeMap<String, JoueurHumain> obtenirListeJoueurs()
 	{
 		return lstJoueurs;
 	}
@@ -493,7 +580,7 @@ public class Salle
 	 * 				l'être par l'appelant de cette fonction tout dépendant
 	 * 				du traitement qu'elle doit faire
 	 */
-	public TreeMap obtenirListeTables()
+	public TreeMap<Integer, Table> obtenirListeTables()
 	{
 		return lstTables;
 	}
@@ -521,16 +608,16 @@ public class Salle
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueurs (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueurs.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueurs.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs de la salle et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String,JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 			// Si le nom d'utilisateur du joueur courant n'est pas celui
 			// qui vient d'entrer dans la salle, alors on peut envoyer un 
@@ -571,16 +658,16 @@ public class Salle
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueurs (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueurs.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueurs.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs de la salle et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String,JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 			// Si le nom d'utilisateur du joueur courant n'est pas celui
 			// qui vient de quitter la salle, alors on peut envoyer un 
@@ -616,24 +703,24 @@ public class Salle
 	 * @synchronism Cette fonction n'est pas synchronisée ici, mais elle l'est
 	 * 				par l'appelant (creerTable).
 	 */
-	private void preparerEvenementNouvelleTable(int noTable, int tempsPartie, String nomUtilisateur)
+	private void preparerEvenementNouvelleTable(int noTable, int tempsPartie, String nomUtilisateur, String tablName)
 	{
 	    // Créer un nouvel événement qui va permettre d'envoyer l'événement 
 	    // aux joueurs qu'une table a été créée
-	    EvenementNouvelleTable nouvelleTable = new EvenementNouvelleTable(noTable, tempsPartie);
+	    EvenementNouvelleTable nouvelleTable = new EvenementNouvelleTable(noTable, tempsPartie, tablName);
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueurs (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueurs.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueurs.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs de la salle et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String,JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 			// Si le nom d'utilisateur du joueur courant n'est pas celui
 			// qui vient de créer la table, alors on peut envoyer un 
@@ -673,16 +760,16 @@ public class Salle
 	    
 		// Créer un ensemble contenant tous les tuples de la liste 
 		// lstJoueurs (chaque élément est un Map.Entry)
-		Set lstEnsembleJoueurs = lstJoueurs.entrySet();
+		Set<Map.Entry<String,JoueurHumain>> lstEnsembleJoueurs = lstJoueurs.entrySet();
 		
 		// Obtenir un itérateur pour l'ensemble contenant les joueurs
-		Iterator objIterateurListe = lstEnsembleJoueurs.iterator();
+		Iterator<Entry<String, JoueurHumain>> objIterateurListe = lstEnsembleJoueurs.iterator();
 		
 		// Passer tous les joueurs de la salle et leur envoyer un événement
 		while (objIterateurListe.hasNext() == true)
 		{
 			// Créer une référence vers le joueur humain courant dans la liste
-			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry)(objIterateurListe.next())).getValue());
+			JoueurHumain objJoueur = (JoueurHumain)(((Map.Entry<String,JoueurHumain>)(objIterateurListe.next())).getValue());
 			
 		    // Obtenir un numéro de commande pour le joueur courant, créer 
 		    // un InformationDestination et l'ajouter à l'événement
@@ -696,15 +783,34 @@ public class Salle
 
 	/**
 	 * Cette fonction permet de retourner le nom de la salle courante.
-	 * 
+	 * If the room has two languages on return name in the needed lang
+	 * if not on return the name in existing lang, or if the lang isn't 
+	 * known on return the existing string 
 	 * @return String : Le nom de la salle
 	 */
-	public String obtenirNomSalle()
+	public String getRoomName(String lang)
 	{
-		return strNomSalle;
-	}
+		if(lang.equals(""))
+			return strNomSalle;
+		
+		boolean exist = false; 
+		for(int i = 0; i < strNomSalle.length(); i++)
+		{
+			if(strNomSalle.charAt(i) == '/')
+				exist = true;
+		}
 	
-	public Regles obtenirRegles()
+		if(exist)
+		{
+		   StringTokenizer nomSalle = new StringTokenizer(strNomSalle, "/");
+		   String nomFr = nomSalle.nextToken().trim();
+		   String nomEng = nomSalle.nextToken().trim();
+		   return lang.equalsIgnoreCase("fr")? nomFr : nomEng;
+		}
+		return strNomSalle;
+	}//end methode
+	
+	public Regles getRegles()
 	{
 	   return objRegles;
 	}
@@ -718,16 +824,160 @@ public class Salle
 	 */
 	public boolean protegeeParMotDePasse()
 	{
-		return !(strMotDePasse == null || strMotDePasse.equals(""));
+		return !(getStrPassword() == null || getStrPassword().equals(""));
 	}
+
+
+	public String getGameType()
+	{
+		return gameType;
+	}
+
+
+	
+	public void setRoomDescription(String roomDescription) {
+		this.roomDescription = roomDescription;
+	}
+
+	// return room description
+	public String getRoomDescription(String lang) {
+		if(lang.equals(""))
+			return roomDescription;
+
+		boolean exist = false; 
+		for(int i = 0; i < roomDescription.length(); i++)
+		{
+			if(roomDescription.charAt(i) == '/')
+				exist = true;
+		}
+
+		if(exist)
+		{
+			StringTokenizer descRoom = new StringTokenizer(roomDescription, "/");
+			String descFr = descRoom.nextToken().trim();
+			String descEng = descRoom.nextToken().trim();
+			return lang.equalsIgnoreCase("fr")? descFr : descEng;
+		}
+		return roomDescription;
+	}
+
+	/*
+	public void setStrCreatorUserName(String strCreatorUserName) {
+		this.strCreatorUserName = strCreatorUserName;
+	}*/
+
+	public String getStrCreatorUserName() {
+		return strCreatorUserName;
+	}
+
+	/*
+	public void setRoomID(int roomID) {
+		this.roomID = roomID;
+	}*/
+
+	public int getRoomID() {
+		return roomID;
+	}
+
+	/*
+	public void setMasterTime(int masterTime) {
+		this.masterTime = masterTime;
+	}*/
+
+	public int getMasterTime() {
+		return masterTime;
+	}
+/*
+	public boolean isRoomCategories() {
+		return roomCategories;
+	}*/
+
+	public ArrayList<Integer> getCategories() {
+		return categories;
+	}
+
+	/**
+	 * @param categories the categories to set
+	 */
+	public void setCategories() {
+		Categories[] catValues = Categories.values();
+		for(int i = 0; i < catValues.length; i++)
+		{
+			categories.add(catValues[i].getCode());
+		}
+
+	}// end methode
+	
+	/**
+	 * Method used to set categories of questions used in this game
+	 * @param categoriesString
+	 */
+	public void setCategories(String categoriesString)
+	{
         
-        public Node obtenirNoeudLangue()
-        {
-            return noeudLangue;
-        }
-        
-        public String obtenirGameType()
-        {
-            return gameType;
-        }
-}
+		if(categoriesString != null){
+			System.out.println("string cat : " + categoriesString);		
+			StringTokenizer cat = new StringTokenizer(categoriesString, ":");
+			int whatCategories = Integer.parseInt(cat.nextToken());
+			System.out.println("string cat bool : " + whatCategories);
+			// if whatCategories == 1 we take only categories from BD
+			if(whatCategories == 1){
+				while(cat.hasMoreTokens())
+				{
+					categories.add(Integer.parseInt(cat.nextToken()));
+				}
+			}else if(whatCategories == 0)
+			// we take categories from enum without categories from BD
+			{
+				setCategories();
+				while(cat.hasMoreTokens())
+				{
+					Integer i = Integer.parseInt(cat.nextToken());
+					categories.remove(i);
+					System.out.println("string cat int : " + i);
+				}
+			}else setCategories(); 	
+		}else setCategories(); 		// if string == null
+		
+		// to not be without any categories
+		if( categories.isEmpty()) setCategories(); 
+		
+		ListIterator<Integer> it = categories.listIterator();	
+		while(it.hasNext())
+			System.out.println(it.next());
+	}// end mathode
+	
+
+	private void setLastNumber(int lastNumber) {
+		this.lastNumber = lastNumber;
+		
+		if(this.lastNumber > 999)
+			this.lastNumber = 0;
+	}
+
+	private int getLastNumber() {
+		return lastNumber;
+	}
+
+	public String getStrPassword() {
+		return strPassword;
+	}
+
+	public void setObjControleurJeu(ControleurJeu objControleurJeu) {
+		this.objControleurJeu = objControleurJeu;
+	}
+
+	public ControleurJeu getObjControleurJeu() {
+		return objControleurJeu;
+	}
+
+	public GenerateurPartie getGameFactory() {
+		return gameFactory;
+	}
+
+	public Table obtenirTable(int intNoTable) {
+		
+		return (Table)lstTables.get( new Integer(intNoTable));
+	}
+	
+}// end class 

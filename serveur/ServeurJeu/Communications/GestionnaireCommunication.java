@@ -4,11 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.Vector;
-
 import org.apache.log4j.Logger;
-
 import ServeurJeu.ControleurJeu;
 import ServeurJeu.BD.GestionnaireBD;
 import ServeurJeu.Configuration.GestionnaireConfiguration;
@@ -26,7 +23,7 @@ public class GestionnaireCommunication
 	private ControleurJeu objControleurJeu;
 	
 	// Déclaration d'une liste de ProtocoleJoueur des clients connectés au serveur
-	private Vector lstProtocoleJoueur;
+	private Vector<ProtocoleJoueur> lstProtocoleJoueur;
 	
 	// Déclaration d'un objet qui va permettre de vérifier l'état des connexions
 	// entre le serveur et les clients
@@ -47,8 +44,8 @@ public class GestionnaireCommunication
 	// Déclaration d'un socket pour le serveur
 	private ServerSocket objSocketServeur;
 	
-	private GestionnaireTemps objGestionnaireTemps;
-	private TacheSynchroniser objTacheSynchroniser;
+	//private GestionnaireTemps objGestionnaireTemps;
+	//private TacheSynchroniser objTacheSynchroniser;
 	
 	private boolean boolStopThread; 
 	
@@ -61,9 +58,7 @@ public class GestionnaireCommunication
 	 * le port d'écoute du serveur et la référence vers le contrôleur de jeu ainsi
 	 * que vers le gestionnaire d'événements.
 	 */
-	public GestionnaireCommunication(ControleurJeu controleur, GestionnaireEvenements gestionnaireEv, 
-	        						 GestionnaireBD gestionnaireBD,
-									 GestionnaireTemps gestionnaireTemps, TacheSynchroniser tacheSynchroniser ) 
+	public GestionnaireCommunication(ControleurJeu controleur, GestionnaireEvenements gestionnaireEv) 
 	{
 		super();
 		
@@ -76,16 +71,16 @@ public class GestionnaireCommunication
 		
 		// Garder la référence vers le GestionnaireEvenements et vers le GestionnaireBD
 		objGestionnaireEvenements = gestionnaireEv;
-		objGestionnaireBD = gestionnaireBD;
+		objGestionnaireBD = controleur.obtenirGestionnaireBD();
 		
 		// Créer une liste des ProtocoleJoueur
-		lstProtocoleJoueur = new Vector();
+		lstProtocoleJoueur = new Vector<ProtocoleJoueur>();
 		
 		// Créer le vérificateur de connexions
 		objVerificateurConnexions = new VerificateurConnexions(this);
 		
-		objGestionnaireTemps = gestionnaireTemps;
-		objTacheSynchroniser = tacheSynchroniser;
+		//objGestionnaireTemps = controleur.obtenirGestionnaireTemps();
+		//objTacheSynchroniser = controleur.obtenirTacheSynchroniser();
 		
 		
 		// Créer un thread pour le vérificateur de connexions
@@ -128,9 +123,8 @@ public class GestionnaireCommunication
 				
 				// Accepter une connexion et créer un objet ProtocoleJoueur
 				// qui va exécuter le protocole pour le joueur
-				ProtocoleJoueur objJoueur = new ProtocoleJoueur(objControleurJeu, this, objVerificateurConnexions,
-																objSocketServeur.accept(),
-																objGestionnaireTemps, objTacheSynchroniser);
+				ProtocoleJoueur objJoueur = new ProtocoleJoueur(objControleurJeu, objVerificateurConnexions,
+																objSocketServeur.accept());
 				
 				// Créer un thread pour le joueur demandant la connexion
 				Thread threadJoueur = new Thread(objJoueur);
@@ -182,6 +176,7 @@ public class GestionnaireCommunication
 		// Enlever le protocole joueur de la liste des ProtocoleJoueur
 		try
 		{
+			
 			lstProtocoleJoueur.remove(protocole);
 			miseAJourInfo();
 		}
@@ -198,7 +193,7 @@ public class GestionnaireCommunication
 	 * @return Vector : la liste des ProtocoleJoueur des clients 
 	 * 					présentement connectés au serveur de jeu
 	 */
-	public Vector obtenirListeProtocoleJoueur()
+	public Vector<ProtocoleJoueur> obtenirListeProtocoleJoueur()
 	{
 		return lstProtocoleJoueur;
 	}

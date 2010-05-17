@@ -116,6 +116,7 @@ public class ParametreIA {
 	public final static int RAISON_MINIJEU = 2;
 	public final static int RAISON_MAGASIN = 3;
 	public final static int RAISON_OBJET = 4;
+	public final static int RAISON_FINISH = 5;
 
     // Constante représentant les mini-jeus
     public final static int MINIJEU_BALLE_AU_MUR = 0;
@@ -126,12 +127,9 @@ public class ParametreIA {
     public final static int GAUCHE = 2;
     public final static int HAUT = 3;
     
-    // Constante contenant le nombre d'objets maximum de base qu'un joueur
-    // virtuel se permet de trainer
-    public final static int MAX_NOMBRE_OBJETS = 10;
-    
+      
     // Constante contenant le nombre de id personnage
-    public final static int NOMBRE_PERSONNAGE_ID = 4;
+    public final static int NOMBRE_PERSONNAGE_ID = 10;
      
     // Facteur d'éloignement minimal
     public final static double FACTEUR_AJUSTEMENT_MIN = 0.01;
@@ -154,19 +152,31 @@ public class ParametreIA {
 		GestionnaireConfiguration config = GestionnaireConfiguration.obtenirInstance();
 		
 		// Créer le tableau contenant l'info pour chaque objet utilisable
-		tParametresIAObjetUtilisable = new ParametreIAObjet[1];
+		tParametresIAObjetUtilisable = new ParametreIAObjet[8];
 		
 		// Objet Utilisable "Reponse" UID = 0
 		tParametresIAObjetUtilisable[Objet.UID_OU_LIVRE] = 
 		    new ParametreIAObjet(4950, 101, 6, 800, 200, 100, 20, 3, 60);
 		
+		// Objet Utilisable "Reponse" UID = 0
+		tParametresIAObjetUtilisable[Objet.UID_OU_BOULE] = 
+		    new ParametreIAObjet(4950, 101, 6, 800, 200, 100, 20, 3, 60);
+		
+		// Objet Utilisable "Banane" 
+		tParametresIAObjetUtilisable[Objet.UID_OU_BANANE] = 
+		    new ParametreIAObjet(9950, 201, 6, 300, 100, 2000, 10, 4, 50);
+		
+		// Objet Utilisable "Braniac" 
+		tParametresIAObjetUtilisable[Objet.UID_OU_BRANIAC] = 
+		    new ParametreIAObjet(9950, 151, 6, 300, 100, 900, 10, 4, 50);
+		
 		// Paramètres pour les pièces
 		objParametreIAPiece = 
-		    new ParametreIAObjet(4950, 101, 6, 800, 0, 100, 0, 0, 0);
+		    new ParametreIAObjet(4950, 101, 6, 1000, 0, 100, 0, 0, 0);
 		    
 		// Paramètres pour les magasins
 		objParametreIAMagasin = 
-		    new ParametreIAObjet(4950, 101, 6, 800, 0, 100, 0, 0, 0);
+		    new ParametreIAObjet(4950, 101, 6, 1000, 0, 100, 0, 0, 0);
 		    
 		// Paramètres pour les minijeus
 		objParametreIAMinijeu = 
@@ -175,29 +185,29 @@ public class ParametreIA {
 		// Créer le tableau contenant les pourcentages pour les choix
 		// des déplacements
 		tPourcentageChoix = new int[NOMBRE_NIVEAU_DIFFICULTE][DEPLACEMENT_MAX];
-		tPourcentageChoix[DIFFICULTE_FACILE][0] = 70;
-		tPourcentageChoix[DIFFICULTE_FACILE][1] = 20;
-		tPourcentageChoix[DIFFICULTE_FACILE][2] = 9;
-		tPourcentageChoix[DIFFICULTE_FACILE][3] = 1;
-		tPourcentageChoix[DIFFICULTE_FACILE][4] = 0;
+		tPourcentageChoix[DIFFICULTE_FACILE][0] = 60;
+		tPourcentageChoix[DIFFICULTE_FACILE][1] = 25;
+		tPourcentageChoix[DIFFICULTE_FACILE][2] = 12;
+		tPourcentageChoix[DIFFICULTE_FACILE][3] = 2;
+		tPourcentageChoix[DIFFICULTE_FACILE][4] = 1;
 		tPourcentageChoix[DIFFICULTE_FACILE][5] = 0;
-		tPourcentageChoix[DIFFICULTE_MOYEN][0] = 50;
-		tPourcentageChoix[DIFFICULTE_MOYEN][1] = 30;
+		tPourcentageChoix[DIFFICULTE_MOYEN][0] = 40;
+		tPourcentageChoix[DIFFICULTE_MOYEN][1] = 35;
 		tPourcentageChoix[DIFFICULTE_MOYEN][2] = 19;
-		tPourcentageChoix[DIFFICULTE_MOYEN][3] = 1;
-		tPourcentageChoix[DIFFICULTE_MOYEN][4] = 0;
-		tPourcentageChoix[DIFFICULTE_MOYEN][5] = 0;
-		tPourcentageChoix[DIFFICULTE_DIFFICILE][0] = 5;
-		tPourcentageChoix[DIFFICULTE_DIFFICILE][1] = 19;
-		tPourcentageChoix[DIFFICULTE_DIFFICILE][2] = 40;
-		tPourcentageChoix[DIFFICULTE_DIFFICILE][3] = 25;
+		tPourcentageChoix[DIFFICULTE_MOYEN][3] = 3;
+		tPourcentageChoix[DIFFICULTE_MOYEN][4] = 2;
+		tPourcentageChoix[DIFFICULTE_MOYEN][5] = 1;
+		tPourcentageChoix[DIFFICULTE_DIFFICILE][0] = 10;
+		tPourcentageChoix[DIFFICULTE_DIFFICILE][1] = 20;
+		tPourcentageChoix[DIFFICULTE_DIFFICILE][2] = 35;
+		tPourcentageChoix[DIFFICULTE_DIFFICILE][3] = 20;
 		tPourcentageChoix[DIFFICULTE_DIFFICILE][4] = 10;
-		tPourcentageChoix[DIFFICULTE_DIFFICILE][5] = 1;    
-		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][0] = 0;
-		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][1] = 5;
-		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][2] = 15;
-		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][3] = 40;
-		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][4] = 30;
+		tPourcentageChoix[DIFFICULTE_DIFFICILE][5] = 5;    
+		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][0] = 5;
+		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][1] = 10;
+		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][2] = 20;
+		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][3] = 35;
+		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][4] = 20;
 		tPourcentageChoix[DIFFICULTE_TRES_DIFFICILE][5] = 10;
 		
 		
@@ -205,29 +215,29 @@ public class ParametreIA {
 		// réussites des réponses
 		tPourcentageReponse = new int[NOMBRE_NIVEAU_DIFFICULTE][DEPLACEMENT_MAX];
 		tPourcentageReponse[DIFFICULTE_FACILE][0] = 70;
-		tPourcentageReponse[DIFFICULTE_FACILE][1] = 50;
-		tPourcentageReponse[DIFFICULTE_FACILE][2] = 40;
-		tPourcentageReponse[DIFFICULTE_FACILE][3] = 10;
-		tPourcentageReponse[DIFFICULTE_FACILE][4] = 0;
-		tPourcentageReponse[DIFFICULTE_FACILE][5] = 0;
-		tPourcentageReponse[DIFFICULTE_MOYEN][0] = 90;
-		tPourcentageReponse[DIFFICULTE_MOYEN][1] = 80;
-		tPourcentageReponse[DIFFICULTE_MOYEN][2] = 60;
-		tPourcentageReponse[DIFFICULTE_MOYEN][3] = 10;
-		tPourcentageReponse[DIFFICULTE_MOYEN][4] = 0;
-		tPourcentageReponse[DIFFICULTE_MOYEN][5] = 0;
-		tPourcentageReponse[DIFFICULTE_DIFFICILE][0] = 95;
-		tPourcentageReponse[DIFFICULTE_DIFFICILE][1] = 90;
-		tPourcentageReponse[DIFFICULTE_DIFFICILE][2] = 85;
+		tPourcentageReponse[DIFFICULTE_FACILE][1] = 55;
+		tPourcentageReponse[DIFFICULTE_FACILE][2] = 45;
+		tPourcentageReponse[DIFFICULTE_FACILE][3] = 15;
+		tPourcentageReponse[DIFFICULTE_FACILE][4] = 2;
+		tPourcentageReponse[DIFFICULTE_FACILE][5] = 1;
+		tPourcentageReponse[DIFFICULTE_MOYEN][0] = 80;
+		tPourcentageReponse[DIFFICULTE_MOYEN][1] = 70;
+		tPourcentageReponse[DIFFICULTE_MOYEN][2] = 50;
+		tPourcentageReponse[DIFFICULTE_MOYEN][3] = 20;
+		tPourcentageReponse[DIFFICULTE_MOYEN][4] = 3;
+		tPourcentageReponse[DIFFICULTE_MOYEN][5] = 2;
+		tPourcentageReponse[DIFFICULTE_DIFFICILE][0] = 90;
+		tPourcentageReponse[DIFFICULTE_DIFFICILE][1] = 80;
+		tPourcentageReponse[DIFFICULTE_DIFFICILE][2] = 75;
 		tPourcentageReponse[DIFFICULTE_DIFFICILE][3] = 50;
-		tPourcentageReponse[DIFFICULTE_DIFFICILE][4] = 30;
-		tPourcentageReponse[DIFFICULTE_DIFFICILE][5] = 15; 
+		tPourcentageReponse[DIFFICULTE_DIFFICILE][4] = 20;
+		tPourcentageReponse[DIFFICULTE_DIFFICILE][5] = 5; 
 		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][0] = 100;
-		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][1] = 95;
-		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][2] = 90;
-		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][3] = 80;
-		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][4] = 70;
-		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][5] = 60; 
+		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][1] = 90;
+		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][2] = 70;
+		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][3] = 60;
+		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][4] = 40;
+		tPourcentageReponse[DIFFICULTE_TRES_DIFFICILE][5] = 20; 
         
         // Créer le tableau pour le pourcentage des choix lorsque le 
         // joueur possède l'objet Livre
@@ -292,30 +302,30 @@ public class ParametreIA {
         tTempsReflexionAleatoire = new int [NOMBRE_TYPE_REFLEXION][NOMBRE_NIVEAU_DIFFICULTE];
 	    
 	    // Temps de réflexion lors d'achat
-	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_FACILE] = 4;
-	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_MOYEN] = 3;
-	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_DIFFICILE] = 2;
-	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_TRES_DIFFICILE] = 1;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_FACILE] = 4;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_MOYEN] = 4;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_DIFFICILE] = 3;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_TRES_DIFFICILE] = 2;
+	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_FACILE] = 5;
+	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_MOYEN] = 4;
+	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_DIFFICILE] = 3;
+	    tTempsReflexionBase[TYPE_REFLEXION_ACHAT][DIFFICULTE_TRES_DIFFICILE] = 2;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_FACILE] = 6;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_MOYEN] = 5;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_DIFFICILE] = 4;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_ACHAT][DIFFICULTE_TRES_DIFFICILE] = 3;
 	      
         // Temps de réflexion avant un coup
-	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_FACILE] = 4;
-	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_MOYEN] = 3;
-	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_DIFFICILE] = 2;
-	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_TRES_DIFFICILE] = 1;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_FACILE] = 4;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_MOYEN] = 4;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_DIFFICILE] = 3;
-	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_TRES_DIFFICILE] = 2;
+	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_FACILE] = 6;
+	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_MOYEN] = 5;
+	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_DIFFICILE] = 4;
+	    tTempsReflexionBase[TYPE_REFLEXION_COUP][DIFFICULTE_TRES_DIFFICILE] = 3;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_FACILE] = 6;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_MOYEN] = 5;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_DIFFICILE] = 4;
+	    tTempsReflexionAleatoire[TYPE_REFLEXION_COUP][DIFFICULTE_TRES_DIFFICILE] = 3;
 	    
         // Temps de réflexion pour répondre à une question  
-	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_FACILE] = 32;
-	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_MOYEN] = 24;
-	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_DIFFICILE] = 16;
-	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_TRES_DIFFICILE] = 8;
+	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_FACILE] = 32;  //???????????????
+	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_MOYEN] = 28;
+	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_DIFFICILE] = 24;
+	    tTempsReflexionBase[TYPE_REFLEXION_REPONSE][DIFFICULTE_TRES_DIFFICILE] = 20;
 	    tTempsReflexionAleatoire[TYPE_REFLEXION_REPONSE][DIFFICULTE_FACILE] = 14;
 	    tTempsReflexionAleatoire[TYPE_REFLEXION_REPONSE][DIFFICULTE_MOYEN] = 12;
 	    tTempsReflexionAleatoire[TYPE_REFLEXION_REPONSE][DIFFICULTE_DIFFICILE] = 10;
