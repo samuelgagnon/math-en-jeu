@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config
+
+	language="en"
+	gameType="mathEnJeu"
+	
+	url_server1 = "mathenjeu.ca"
+	url_server = "192.168.1.67"
+	url_serveur1 = "localhost"
+	url_flash="http://mathenjeu.mat.ulaval.ca/questions5/"
+	port1="8080"
+	port="6100"
+	
+	
+
+
+ 	username2 = "test4"
+	password2 = "5736a870700791e6c4ad532ac73ef2e5:lozRzf8WqkNQmnATnTOpbYCB6F4L8XaF"
+
+	username = "chris"
+	password = "1d0fcbf18571fe737a43409d83e6a31f:ECbirg4s9TKKiiBSVdQMrU1GyvRKp4HT"
+
+	gamepath="mathemaQuoi_beta.swf"
+
+	masterTime="10"
+	masterFinalTime="15"
+	windowOption = "http://dev2.mathamaze.ca/mathenjeu/flash/pop-up.php"
+	windowOption1 = "Close"
+	closeMain = ""
+>
+
+</config>

@@ -1,0 +1,36 @@
+﻿
+<?xml version="1.0" encoding="UTF-8"?> 
+<Texte 
+	  
+  main_menu = ""
+	  bienvenue = "Welcome to MathAmaze "
+    btnPlay = "Play"
+    btnQuit = "Quit"
+    btnProfile = "My Profile"
+    teachBtn = "My class"
+    playMaze = "Enter the maze
+and be the first 
+to escape!"
+    linkProf1 = "Are you a teacher?"
+    linkProf2 = "Click here..."
+    linkProf3 = "to enter the Teacher's Lounge."
+    erreurRole = "Access denied!
+This section is for teachers only.
+If you are a teacher and you need to use this section contact us."
+    erreurContact = ""
+    textReturn = "To return to the main menu click on 'OK'"
+ 
+	
+	chargement_beta = ""	
+
+		version = "Version 0.4 Beta"
+		boutonEntrer = "Enter"
+		barLabel = "Loading ..."
+		
+		GUIdejaConnecte = "This user is already connected. Close this window and start again with another user."
+			GUIhorsService = "The server does not answer. Check you connection and start again. If the problem persists, please click on the following link to perform a connection test and then send the result to the SMAC technical team. We are sincerely sorry that you are experimenting this problem."
+			GUIhorsService2 = "Connection Test"
+			GUIhorsServiceURL = ""
+			GUInonConnu = "This user name is not known. Please close the window and start again with another username!"
+>
+</Texte>  

@@ -1,0 +1,194 @@
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<Texte 
+	Messagerie = ""
+	  welcomeMess = "Welcome to Math Amaze!"
+	  bananaMess = " threw a Banana at "
+	  outMess = " left the game."
+	  InMess = " is in again!"
+	  moveMess = "To move - click on a yellow square!"
+	  moveMessage = " moved to a new square."
+	  bookUsedMess = " used a book."
+	  brainiacUsedMess = " used brainiac."
+	  cristallUsedMess = " used a crystal ball."
+	  bookCollectMess = "You found a book. You can use it to remove one wrong choice."
+	  cristallCollectMess = "You found a crystal ball. You can use it to swap your question with an easier one!"
+	  moneyCollectMess = "You found a coin. You can use it to buy an object in the shop."
+	  bananaCollectMess = "You found a banana. You can toss it to another player!"
+	  
+	  objectMessageBoule = "Change the current question for an easier one."
+	  objectMessageLivre = "Remove an incorrect multiple choice option."
+	  objectMessagePiece = "Buy objects at the store."
+	  objectMessageBanane = "Throw on an opponent's square to mess them up."
+	  objectMessageHelp = "Help Menu. Here you can find info about the game."
+	  objectMessageClose = "Exit button. If you want to quit the game..."
+	  objectMessageTime = "Time left to the game"
+	  
+	  controlMessageLoopPlus = "Zoom in."
+	  controlMessageLoopMinus = "Zoom out."
+	  controlMessageMusique = "Turn on/off music."
+	  controlMessageSound = "Turn on/off sound effects."
+	  
+ 
+  
+  
+	mathemaQuoi_betaNEW = ""
+	  errorPWD = "Wrong password! Try again or choose another room."
+          GUIerrorConnection = " An error occured. You are disconnected from the game server. Click on the X on the upper right corner of the screen to quit the game and try again!"
+    pwdAlert = "Error!"
+    fermerAlert = "Do you really want to quit?"
+    textGUI_PWD = "You need a password to enter this room..."  
+	  errorSelect = "Select a room first."
+	  nomAlert = "Please give a name to the room."
+	  descAlert = "Please enter a short description"
+	  dateBeginAlert = "Opening date is invalid."
+	  dateEndAlert = "Closing date is invalid."
+	  passAlert = "Password protecting your room ensure that only your pupils can access it. Accordingly the report will contain only their game results."
+	  
+	  buttonNew = "New Game"
+	  buttonOld = "Rejoin"
+	  restartText = "You are already assigned to a running game. Do you want to rejoin it or start a new game?"
+	  buttonBug = " Report an error "
+	  userText = "Player :"
+	  buttonSend = "Send"
+	  buttonBack = "Cancel"
+	  
+	  bugReportMess = "The error was successfully reported. Thanks!"
+	  pointsMessage = "Bonus Points to reach the finish line"
+	  
+  mathemaQuoi_beta = ""
+	
+		frame1 = ""
+			
+			textAcceptStats = "I agree that my use of the room will be reported to "
+			
+      selectRoom = "Choose a room"
+		  selectTable = "Pick a table"
+		  selectPlayer = "Select a player"
+			
+			descriptionPrincipale = "It's the heart of MathAmaze. There is a huge questions library for each of the specific mathematic domains."
+			
+			descriptionAccromath = "More advanced questions related to the various subjets presented in the Accromath's magazine."
+			
+			descriptionDefault = "This questions libray has been created by a person or a group not affiliated with the MathAmaze's team."
+			
+			salle = "ROOM SELECT"
+      chargementSalles = "Room list is loading..." 
+			boutonRetour = "Back"
+			boutonContinuer = "Continue"
+			boutonQuitterX = "Quit the game.."
+			tableNameLabel = "Table name"
+			tableLinesLabel = "Lines"
+			tableColumnsLabel = "Columns"
+			tableOptionalLabel = "*Optional"
+			tableGameType = "Game Type"
+			playersListe = " - Liste of players - "
+			sallesOuvertes = "Rooms"
+			
+			searchRoomText1 = "Scroll the room's list or find your teacher's room by using"
+      searchRoomText2 = " the quick search"
+			
+	
+			explication = "The advanced mode allows for the more experienced player to select his level among the various mathematical categories of the game. If desired, he can personnalize his gaming experience by choosing only the subjects he is interested in."
+			
+				
+		frame2 = ""
+
+			texteTables = " "	
+      chargementTables = "Table list is loading..." 
+      aucuneTable = "There's no open table in this room"
+			btnCreerTable = "New table"
+			choixTable = "TABLE SELECT"
+			choixTemps = "Choose the duration of the game you wish to play."
+			selectTableInfo = "Scroll the list to find the table you'd like to 
+join and the game mode you'd like to play"
+			
+			tablesOuvertes = "Tables"
+
+			GUITemps = "How long would you like to play (in minutes) :"
+	
+		frame3 = ""
+
+			noTable = "Table number :"	
+			numSalle = "Room :"
+			tableInfo = "Table :"
+			temps = "Time :"
+			timeLabel = "Duration"
+			
+			1 = "Classic"
+			2 = "Tournament"
+			3 = "Race"
+			
+			selectPlayerText = "PLAYER SELECT"
+			selectPlayerInfo = "Select a player from our colourful crew"
+
+			choixPerso = "Choose your character."
+			inconnu = "Unknown"
+			demarrerMaintenant = "Start now"
+			attente = "Waiting for other players ..."
+
+			difficulte = "Difficulty"
+
+			choixNiveau = "Don't wait for other players!
+                         Start the game!"
+			niveauFacile = "Easy"
+			niveauInt = "Intermediate"
+			niveauDiff = "Difficult"
+			niveauTrDiff = "Very Difficult"
+
+			joueur = "Player"
+
+		frame4 = ""
+
+			sonsLabel = "Sounds"
+			musiqueLabel = "Music"
+
+			texteMauvaiseReponse = "Incorrect"
+			punitionTexte = "Time left to your penalty:"
+			penalite = "Penalty:"
+			secondes = "seconds"
+			reponse = "Answer:"
+			vrai = "true"
+			faux = "false"
+			
+
+	
+		frame5 = ""
+
+			btn_rejouer = "Play again"
+			btn_retourSite = "Return to MathAmaze"
+			btn_quitter = "Quit"
+			joueurs = "Players"
+			pointage = "Score"
+			resultat = "Results"
+			
+
+
+		autre = ""
+
+			GUIdejaConnecte = "This user is already connected. Close this window and start again with another user."
+			GUIhorsService = "The server does not answer. Check you connection and start again. If the problem persists, please click on the following link to perform a connection test and then send the result to the SMAC technical team. We are sincerely sorry that you are experimenting this problem."
+			GUIhorsService2 = "Connection Test"
+			GUIhorsServiceURL = ""
+			
+			
+			GUIerreurQuestion = "MathAmaze is unable to load the question. Please check your internet connection or communicate with the SMAC technical team. We are sincerely sorry that you are experimenting this problem."
+			GUIerreurRetroaction = "MathAmaze is unable to load the feedback. Please check your internet connection or communicate with the SMAC technical team. We are sincerely sorry that you are experimenting this problem."
+
+
+			GUIbanane = "just threw a banana at you.
+For the next 90 seconds, the questions you'll be asked will be more difficult. Also, your allowed movements have been diminished by 2 steps."	
+			
+			GUIbananeUser = "You used a banana."
+			GUIserveur = "We are sincerely sorry, but we are currently experiencing difficulty and need teporarily shut down the server. You will be disconnected in a few seconds!"
+
+			GUIutiliserLivre = "Do you really want to use the book?"
+			
+			btnOui = "YES"
+
+			btnNon = "NO"
+
+			deconnecte = "disconnected"
+
+>
+</Texte>  

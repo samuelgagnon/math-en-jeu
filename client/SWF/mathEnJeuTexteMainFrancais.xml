@@ -1,0 +1,37 @@
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<Texte 
+
+	main_menu = ""
+	  bienvenue = "Bienvenue dans Math en jeu!"
+    btnPlay = "Jouer" 
+    btnQuit = "Quitter"
+    btnProfile = "Mon Profil"
+    playMaze = "Entrez dans le labyrinthe et soyez le premier a vous échapper..."
+    teachBtn =   "Ma classe"
+    linkProf1 = "Êtes-vous un professeur?"
+    linkProf2 = "Cliquez ici..."
+    linkProf3 = "pour entrer dans le Salon des Professeurs."
+    erreurRole = "Accès interdit.
+Cette section est réservée aux professeurs.
+Si vous êtes un professeur et que vous voulez accéder à cette section réservée, contactez-nous."
+    erreurContact = ""
+    textReturn = "Pour retourner à Math en jeu, cliquez ici"
+          
+  chargement_beta = ""	
+
+		version = "Version 0.4 Beta"
+		boutonEntrer = "Entrer"
+		barLabel = "Chargement en cours..."
+		
+		autre = ""
+
+
+			GUIdejaConnecte = "Cet utilisateur est déjà connecté. Veuillez fermer la fenêtre et recommencer avec un autre nom d'utilisateur."
+			GUIhorsService = "Le serveur ne répond pas. Veuillez vérifier votre connexion et recommencer. Si le problème persiste, veuillez s'il-vous-plaît cliquer sur le lien suivant afin d'exécuter un test de connexion. Faites ensuite parvenir les résultats de ce test à l'équipe technique de SMAC. Nous sommes sincèrement désolés que vous éprouviez de telles difficultés."
+			GUIhorsService2 = "Test de Connexion"
+			GUIhorsServiceURL = ""
+			GUInonConnu = "Ce nom utilisateur n'est pas connu. Veuillez fermer la fenêtre et recommencer avec un autre nom d'utilisateur!"
+  
+>
+</Texte> 
