@@ -1,2 +1,7 @@
 Test Git/GitHub Samuel Gagnon
 Deuxième test Git/Github SamG
+Finalement, j'ai réussi à régler mon problème de configuration Git:
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+
+J'me suis assuré que ça corresponde à mon compte Git et hop-là.
